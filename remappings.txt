@@ -1,0 +1,3 @@
+@balancer-labs/=node_modules/@balancer-labs
+@uniswap/=node_modules/@uniswap
+@openzeppelin/=node_modules/@openzeppelin
