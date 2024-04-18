@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
+import "@balancer-labs/v2-interfaces/contracts/vault/IFlashLoanRecipient.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IERC20.sol";
 
-
-contract Arbitrage {
+contract FlashLoanArbitrage is IFlashLoanRecipient {
     //////////////////
     // Errors   ///
     //////////////////
@@ -28,6 +28,8 @@ contract Arbitrage {
         }*/
         _;
     }
+
+    IVault private constant vault = IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
     ////////////////////////////////////
     // State Declaration ///
@@ -55,25 +57,57 @@ contract Arbitrage {
     @param _token0 : the address of the first token
     @param _token1 : the address of the second token
     */
-    function printMoney(
+    function makeFlashLoan(
         address _startSwapAddress,
         address _endSwapAddress,
         address _token0,
         address _token1,
         uint256 _flashAmount
     ) external onlyOwner {
+        bytes memory data = abi.encode(_startSwapAddress, _endSwapAddress, _token0, _token1);
+
+        // Token to flash loan, by default we are flash loaning 1 token.
+        IERC20[] memory tokens = new IERC20[](1);
+        tokens[0] = IERC20(_token0);
+
+        // Flash loan amount.
+        uint256[] memory amounts = new uint256[](1);
+        amounts[0] = _flashAmount;
+
+        vault.flashLoan(this, tokens, amounts, data);
+    }
+
+    /*
+    @param tokens : the tokens to flash loan
+    @param amounts : the amounts to flash loan
+    @param feeAmounts : the fee amounts to flash loan
+    @param userData : the data to pass to the flash loan
+    */
+    function receiveFlashLoan(
+        IERC20[] memory tokens,
+        uint256[] memory amounts,
+        uint256[] memory feeAmounts,
+        bytes memory userData
+    ) external override onlyVault {
+        uint256 flashAmount = amounts[0];
+
+        (address startSwapAddress, address endSwapAddress, address token0, address token1) =
+            abi.decode(userData, (address, address, address, address));
+
         // Make the Arbitrage Logic
         address[] memory path = new address[](2);
 
-        path[0] = _token0;
-        path[1] = _token1;
-        _swapTokens(path, _flashAmount, 0, _startSwapAddress);
+        path[0] = token0;
+        path[1] = token1;
+        _swapTokens(path, flashAmount, 0, startSwapAddress);
 
-        path[0] = _token1;
-        path[1] = _token0;
-        _swapTokens(path, IERC20(_token1).balanceOf(address(this)), _flashAmount, _endSwapAddress);
+        path[0] = token1;
+        path[1] = token0;
+        _swapTokens(path, IERC20(token1).balanceOf(address(this)), flashAmount, endSwapAddress);
 
-        IERC20(_token0).transfer(owner, IERC20(_token0).balanceOf(address(this)));
+        // Repay the Flash Loan
+        IERC20(token0).transfer(address(vault), flashAmount);
+        IERC20(token0).transfer(owner, IERC20(token0).balanceOf(address(this)));
     }
 
     /*

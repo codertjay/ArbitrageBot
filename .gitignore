@@ -15,3 +15,6 @@ docs/
 
 node_modules
 
+
+
+abigen --combined-json ./out/Arbitrage.sol/Arbitrage.json  --pkg main --type Arbitrage --out ./ArbitrageBot/Arbitrage.go
