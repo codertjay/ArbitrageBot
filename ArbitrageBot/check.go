@@ -65,5 +65,6 @@ func main() {
 			token1 == common.HexToAddress("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c") {
 			fmt.Printf("Pair %s contains WBNB\n", pairAddress.Hex())
 		}
+
 	}
 }
