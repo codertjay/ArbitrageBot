@@ -4,41 +4,77 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="" />
+    <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/ArbitrageBot.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ArbitrageBot.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/check.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/check.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Arbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/Arbitrage.sol" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
   <component name="GOROOT" url="file:///usr/local/go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;codertjay&quot;
+  }
+}</component>
   <component name="GitToolBoxStore">
     <option name="projectConfigVersion" value="5" />
   </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:codertjay/ArbitrageBot.git&quot;,
+    &quot;accountId&quot;: &quot;1e066a41-d073-41d1-b515-322564fd6fcd&quot;
+  }
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="cad1su9k" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="2fYIYrBZf9EIcjweenIZpdCuuh8" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Build.go build ArbitrageBot/ArbitrageBot.executor&quot;: &quot;Debug&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/codertjay&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/codertjay&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
@@ -47,6 +83,7 @@
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/ArbitrageBot/configurations" />
+      <recent name="$PROJECT_DIR$/ArbitrageBot" />
     </key>
   </component>
   <component name="RunManager">
@@ -81,6 +118,14 @@
         <item itemvalue="Go Build.go build ArbitrageBot/ArbitrageBot" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-33c477a475b1-b97fc8a1e17c-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-241.14494.238" />
+        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-GO-241.14494.238" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

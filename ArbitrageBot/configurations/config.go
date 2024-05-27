@@ -2,14 +2,22 @@ package configurations
 
 import (
 	arbitrageABI "ArbitrageBot/ArbitrageBot/abi"
+	"context"
+	"encoding/json"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"io/ioutil"
 	"log"
 	"math/big"
+	"sync"
+	"time"
 )
 
 // Sushi swap deployed address doc https://dev.sushi.com/docs/Products/Classic%20AMM/Deployment%20Addresses
+//  https://goethereumbook.org/event-subscribe/ check subscribing to event
 
 type ConfigInterface interface {
 	SetupRPCURL() *Config
@@ -26,7 +34,8 @@ func NewConfig() ConfigInterface {
 type Config struct {
 	DecentralizedExchanges []DecentralizedExchange
 	Tokens                 []Tokens
-	RPCUrl                 string
+	HTTPRPCURL             string
+	WSSRPCURL              string
 	MainTokenAddress       common.Address
 }
 
@@ -48,23 +57,40 @@ type Tokens struct {
 }
 
 func (cfg *Config) SetupRPCURL() *Config {
-	cfg.RPCUrl = "https://bsc-dataseed2.defibit.io/" // rpc-url needed
+	cfg.HTTPRPCURL = "https://bsc-mainnet.core.chainstack.com/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
+	cfg.WSSRPCURL = "wss://bsc-mainnet.core.chainstack.com/ws/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
 	return cfg
 }
 
 func (cfg *Config) SetupDecentralizedExchange() *Config {
 	cfg.DecentralizedExchanges = []DecentralizedExchange{
 		{
-			Name:           "UNISWAP",
-			RouterV2:       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-			FactoryAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+			Name:           "PANCAKESWAP",
+			RouterV2:       "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+			FactoryAddress: "0xBCfCcbde45cE874adCB698cC183deBcF17952812",
 		},
 		{
-			Name:           "SUSHISWAP",
-			RouterV2:       "0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F",
-			FactoryAddress: "0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac",
+			Name:           "APESWAP",
+			RouterV2:       "0xcF0feBd3f17CEf5b47b0cD257aCf6025c5BFf3b7",
+			FactoryAddress: "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
 		},
+		//{
+		//	Name:           "BAKERYSWAP",
+		//	RouterV2:       "0xCDe540d7eAFE93aC5fE6233Bee57E1270D3E330F",
+		//	FactoryAddress: "0x01bF7C66C6BD861915Cdaae475042d3c4BA9eF5d",
+		//},
+		//{
+		//	Name:           "MDEX",
+		//	RouterV2:       "0xc6aF770101dA859d680E0829380748CCcD8F7984",
+		//	FactoryAddress: "0x3E5C63644E683549055b9Be8653de26E0B4CD36E",
+		//},
+		//{
+		//	Name:           "UNISWAP",
+		//	RouterV2:       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+		//	FactoryAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+		//},
 	}
+
 	return cfg
 }
 
@@ -81,15 +107,20 @@ type DexTokens struct {
 
 func (cfg *Config) SetupTokens() (*Config, error) {
 	var dexTokens []DexTokens
+	const maxConcurrentGoroutines = 100
 
-	client, err := rpc.Dial(cfg.RPCUrl)
+	client, err := rpc.Dial(cfg.HTTPRPCURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("error occurred while connecting to the RPC client: ", err)
 		return nil, err
 	}
 
 	defer client.Close()
 	ethClient := ethclient.NewClient(client)
+
+	semaphore := make(chan struct{}, maxConcurrentGoroutines)
+	var wg sync.WaitGroup
+	mu := &sync.Mutex{}
 
 	for counter, exchange := range cfg.DecentralizedExchanges {
 
@@ -104,62 +135,88 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 		// Get the total number of pairs
 		totalPairs, err := factory.AllPairsLength(nil)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(dexTokens)
+			log.Println("the pair factory address is: ", factoryAddress)
+			log.Fatal("an error occurred getting the total pairs", err)
 		}
 
 		// Iterate over all pairs and check if they contain WBNB
 		for i := big.NewInt(0); i.Cmp(totalPairs) < 0; i.Add(i, big.NewInt(1)) {
-			pairAddress, err := factory.AllPairs(nil, i)
-			if err != nil {
-				log.Println("Error fetching pair address:", err)
-				continue
-			}
+			semaphore <- struct{}{}
+			wg.Add(1)
 
-			log.Println(pairAddress)
+			go func(i *big.Int) {
+				defer wg.Done()
+				defer func() { <-semaphore }()
 
-			// Instantiate UniswapV2Pair contract
-			pairContract, err := arbitrageABI.NewUniswapV2Pair(pairAddress, ethClient)
-			if err != nil {
-				log.Println("Error creating pair contract:", err)
-				continue
-			}
-
-			// Get tokens in the pair
-			token0, err := pairContract.Token0(nil)
-			if err != nil {
-				log.Println("Error fetching token0:", err)
-				continue
-			}
-			token1, err := pairContract.Token1(nil)
-			if err != nil {
-				log.Println("Error fetching token1:", err)
-				continue
-			}
-
-			if token0 != cfg.MainTokenAddress || token1 != cfg.MainTokenAddress {
-				continue
-			}
-
-			if counter == 0 {
-				dexToken := DexTokens{
-					MainToken:     token0,
-					ExternalToken: token1,
-					Exist:         false,
+				pairAddress, err := factory.AllPairs(nil, i)
+				if err != nil {
+					log.Println("Error fetching pair address:", err)
+					return
 				}
-				dexTokens = append(dexTokens, dexToken)
 
-			} else {
-				// For subsequent exchanges, check if tokens exist in dexTokens and update their existence status
-				for k, tokens := range dexTokens {
-					if (tokens.MainToken == token0 && tokens.ExternalToken == token1) ||
-						(tokens.MainToken == token1 && tokens.ExternalToken == token0) {
-						dexTokens[k].Exist = true
-						break
+				log.Printf("pairAddress from  %s and the pair address is %s \n", exchange.Name, pairAddress.String())
+
+				// Instantiate UniswapV2Pair contract
+				pairContract, err := arbitrageABI.NewUniswapV2Pair(pairAddress, ethClient)
+				if err != nil {
+					log.Println("Error creating pair contract:", err)
+					return
+				}
+
+				// Get tokens in the pair
+				token0, err := pairContract.Token0(nil)
+				if err != nil {
+					log.Println("Error fetching token0:", err)
+					return
+				}
+				token1, err := pairContract.Token1(nil)
+				if err != nil {
+					log.Println("Error fetching token1:", err)
+					return
+				}
+
+				_, err = factory.GetPair(nil, cfg.MainTokenAddress, token0)
+				if err != nil {
+					log.Println("Error getting pair:", err)
+					return
+				}
+
+				mu.Lock()
+				defer mu.Unlock()
+
+				log.Println("token0: ", token0.String())
+
+				if counter == 0 {
+					dexToken := DexTokens{
+						MainToken:     cfg.MainTokenAddress,
+						ExternalToken: token0,
+						Exist:         false,
+					}
+					dexTokens = append(dexTokens, dexToken)
+
+				} else {
+					// For subsequent exchanges, check if tokens exist in dexTokens and update their existence status
+					for k, tokens := range dexTokens {
+						if (tokens.MainToken == token0 && tokens.ExternalToken == token1) ||
+							(tokens.MainToken == token1 && tokens.ExternalToken == token0) {
+							dexTokens[k].Exist = true
+							break
+						}
 					}
 				}
+
+			}(new(big.Int).Set(i))
+
+			// Check if we've reached the maximum number of concurrent goroutines
+			if i.Cmp(big.NewInt(maxConcurrentGoroutines)) >= 0 {
+				break
 			}
 
 		}
+
+		// Wait for all goroutines to complete before moving to the next exchange
+		wg.Wait()
 
 		// After looping a dex completely, update the dexTokens' existence status to false
 		if counter != len(cfg.DecentralizedExchanges)-1 {
@@ -204,7 +261,129 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 		}
 	}
 
+	data, err := json.Marshal(cfg.Tokens)
+	if err != nil {
+		log.Println("Error marshaling DexTokens to JSON:", err)
+		return nil, err
+	}
+
+	// Write JSON data to file
+	err = ioutil.WriteFile("tokens.json", data, 0644)
+	if err != nil {
+		log.Println("Error writing DexTokens JSON to file:", err)
+		return nil, err
+	}
+
+	log.Println("DexTokens saved to  tokens.json")
 	return cfg, nil
+}
+
+func (cfg *Config) LoadDexTokensFromFile() (*Config, error) {
+
+	// Read JSON data from file
+	data, err := ioutil.ReadFile("tokens.json")
+	if err != nil {
+		log.Println("Error reading DexTokens JSON from file:", err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &cfg.Tokens)
+	if err != nil {
+		log.Println("Error unmarshalling DexTokens JSON:", err)
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (cfg *Config) WatchSwap() error {
+	client, err := ethclient.Dial(cfg.WSSRPCURL)
+	if err != nil {
+		log.Fatal("Error connecting to Ethereum client: ", err)
+		return err
+	}
+
+	var wg sync.WaitGroup
+	for _, exchange := range cfg.DecentralizedExchanges {
+		wg.Add(1)
+		go func(exchange DecentralizedExchange) {
+			defer wg.Done()
+			cfg.watchSwapForExchange(client, exchange)
+		}(exchange)
+	}
+
+	wg.Wait()
+	return nil
+}
+
+func (cfg *Config) watchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange) {
+	factoryAddress := common.HexToAddress(exchange.FactoryAddress)
+	factory, err := arbitrageABI.NewUniswapV2Factory(factoryAddress, client)
+	if err != nil {
+		log.Fatalf("Failed to instantiate a Uniswap V2 factory contract: %v", err)
+	}
+
+	for _, tokenPair := range cfg.Tokens {
+		go func(tokenPair Tokens) {
+			pairAddress, err := factory.GetPair(nil, tokenPair.MainToken.Address, tokenPair.ExternalToken.Address)
+			if err != nil {
+				log.Fatalf("Failed to get pair address: %v", err)
+			}
+
+			log.Println("The exchange Name ", exchange.Name, "\n The Pair Address pairAddress: ", pairAddress.String(), "\n The Main Token :", tokenPair.MainToken.Address.String(),
+				"\n The External Token: ", tokenPair.ExternalToken.Address.String())
+
+			query := ethereum.FilterQuery{
+				Addresses: []common.Address{pairAddress},
+			}
+
+			logsCh := make(chan types.Log)
+			sub, err := client.SubscribeFilterLogs(context.Background(), query, logsCh)
+			if err != nil {
+				log.Fatalf("Error subscribing to logs: %v", err)
+			}
+
+			lastBlock := big.NewInt(0)
+			for {
+				select {
+				case err := <-sub.Err():
+					log.Println("Error in subscription:", err)
+					time.Sleep(time.Second * 10) // Exponential backoff can be implemented here
+					sub, err = client.SubscribeFilterLogs(context.Background(), query, logsCh)
+					if err != nil {
+						log.Fatalf("Error resubscribing to logs: %v", err)
+					}
+				case vLog := <-logsCh:
+					if vLog.BlockNumber <= lastBlock.Uint64() {
+						continue
+					}
+					lastBlock.SetUint64(vLog.BlockNumber)
+					// cfg.handleSwapEvent(vLog, exchange.Name)
+					log.Println("New log:", vLog)
+				}
+			}
+		}(tokenPair)
+	}
+
+	// Block the goroutine indefinitely
+	select {}
+}
+func (cfg *Config) handleSwapEvent(vLog types.Log, pair *arbitrageABI.UniswapV2Pair, exchangeName string) {
+	//swapEvent := new(arbitrageABI.UniswapV2PairSwap)
+	//err := pair.UnpackLog(swapEvent, "Swap", vLog)
+	//if err != nil {
+	//	log.Println("Failed to unpack swap event:", err)
+	//	return
+	//}
+	//
+	//log.Printf("Swap event detected on %s: %s/%s\n", exchangeName, swapEvent.Amount0In.String(), swapEvent.Amount1Out.String())
+
+	// Here you would add the logic to determine if an arbitrage opportunity exists and execute the trade if it does.
+	// For example:
+	// - Fetch the current prices on both exchanges
+	// - Calculate the price difference
+	// - If the difference is profitable, execute the trade
+
 }
 
 func (cfg *Config) Load() (*Config, error) {
@@ -212,7 +391,17 @@ func (cfg *Config) Load() (*Config, error) {
 	cfg = cfg.SetupRPCURL()
 	cfg = cfg.SetupDecentralizedExchange()
 	cfg = cfg.SetupMainTokenAddress()
-	cfg, err := cfg.SetupTokens()
+
+	//cfg, err := cfg.SetupTokens()
+	//if err != nil {
+	//	return nil, err
+	//}
+	cfg, err := cfg.LoadDexTokensFromFile()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.WatchSwap()
 	if err != nil {
 		return nil, err
 	}

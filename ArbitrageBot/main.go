@@ -15,7 +15,7 @@ func main() {
 
 	cfg, err := configInterface.Load()
 	if err != nil {
-		log.Println("An error occured ", err)
+		log.Println("An error occurred ", err)
 	}
 	log.Println(cfg)
 

@@ -22,12 +22,7 @@ contract Arbitrage {
         _;
     }
 
-    modifier onlyVault() {
-        /*if (msg.sender != address(vault)) {
-            revert Arbitrage__OnlyOwner();
-        }*/
-        _;
-    }
+
 
     ////////////////////////////////////
     // State Declaration ///
