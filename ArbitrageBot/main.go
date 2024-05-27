@@ -13,7 +13,7 @@ import (
 func main() {
 	configInterface := configurations.NewConfig()
 
-	cfg, err := configInterface.Load()
+	cfg, err := configInterface.Setup()
 	if err != nil {
 		log.Println("An error occurred ", err)
 	}

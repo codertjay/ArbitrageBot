@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ArbitrageBot.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ArbitrageBot.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArbitrageBot/check.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/check.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ArbitrageBot/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Arbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/Arbitrage.sol" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

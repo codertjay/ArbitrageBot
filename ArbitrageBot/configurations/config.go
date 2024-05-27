@@ -24,7 +24,10 @@ type ConfigInterface interface {
 	SetupDecentralizedExchange() *Config
 	SetupMainTokenAddress() *Config
 	SetupTokens() (*Config, error)
-	Load() (*Config, error)
+	Setup() (*Config, error)
+	WatchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange)
+	HandleSwapEvent(vLog types.Log, exchangeName string, pairAddress, mainToken, externalToken common.Address)
+	CalculatePriceDifference(params CalculatePriceDifferenceParams)
 }
 
 func NewConfig() ConfigInterface {
@@ -37,6 +40,7 @@ type Config struct {
 	HTTPRPCURL             string
 	WSSRPCURL              string
 	MainTokenAddress       common.Address
+	ETHClient              *ethclient.Client
 }
 
 type DecentralizedExchange struct {
@@ -54,6 +58,37 @@ type Token struct {
 type Tokens struct {
 	MainToken     Token // could be WBNB or WETH base on the main pairs
 	ExternalToken Token // this is the external pair
+}
+
+func (cfg *Config) Setup() (*Config, error) {
+	cfg.SetupRPCURL()
+	cfg.SetupDecentralizedExchange()
+	cfg.SetupMainTokenAddress()
+
+	ethClient, err := cfg.setupETHClient()
+	if err != nil {
+		return nil, err
+	}
+	cfg.ETHClient = ethClient
+
+	cfg, err = cfg.LoadDexTokensFromFile()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.WatchSwap()
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func (cfg *Config) setupETHClient() (*ethclient.Client, error) {
+	client, err := rpc.Dial(cfg.HTTPRPCURL)
+	if err != nil {
+		return nil, err
+	}
+	return ethclient.NewClient(client), nil
 }
 
 func (cfg *Config) SetupRPCURL() *Config {
@@ -109,15 +144,6 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 	var dexTokens []DexTokens
 	const maxConcurrentGoroutines = 100
 
-	client, err := rpc.Dial(cfg.HTTPRPCURL)
-	if err != nil {
-		log.Fatal("error occurred while connecting to the RPC client: ", err)
-		return nil, err
-	}
-
-	defer client.Close()
-	ethClient := ethclient.NewClient(client)
-
 	semaphore := make(chan struct{}, maxConcurrentGoroutines)
 	var wg sync.WaitGroup
 	mu := &sync.Mutex{}
@@ -126,7 +152,7 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 
 		// Create a new instance of the Uniswap V2 Factory contract
 		factoryAddress := common.HexToAddress(exchange.FactoryAddress)
-		factory, err := arbitrageABI.NewUniswapV2Factory(factoryAddress, ethClient)
+		factory, err := arbitrageABI.NewUniswapV2Factory(factoryAddress, cfg.ETHClient)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -158,7 +184,7 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 				log.Printf("pairAddress from  %s and the pair address is %s \n", exchange.Name, pairAddress.String())
 
 				// Instantiate UniswapV2Pair contract
-				pairContract, err := arbitrageABI.NewUniswapV2Pair(pairAddress, ethClient)
+				pairContract, err := arbitrageABI.NewUniswapV2Pair(pairAddress, cfg.ETHClient)
 				if err != nil {
 					log.Println("Error creating pair contract:", err)
 					return
@@ -308,7 +334,7 @@ func (cfg *Config) WatchSwap() error {
 		wg.Add(1)
 		go func(exchange DecentralizedExchange) {
 			defer wg.Done()
-			cfg.watchSwapForExchange(client, exchange)
+			cfg.WatchSwapForExchange(client, exchange)
 		}(exchange)
 	}
 
@@ -316,7 +342,8 @@ func (cfg *Config) WatchSwap() error {
 	return nil
 }
 
-func (cfg *Config) watchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange) {
+func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange) {
+	// todo: add context in here
 	factoryAddress := common.HexToAddress(exchange.FactoryAddress)
 	factory, err := arbitrageABI.NewUniswapV2Factory(factoryAddress, client)
 	if err != nil {
@@ -358,8 +385,10 @@ func (cfg *Config) watchSwapForExchange(client *ethclient.Client, exchange Decen
 						continue
 					}
 					lastBlock.SetUint64(vLog.BlockNumber)
-					// cfg.handleSwapEvent(vLog, exchange.Name)
-					log.Println("New log:", vLog)
+
+					cfg.HandleSwapEvent(vLog, exchange.Name, pairAddress, tokenPair.MainToken.Address, tokenPair.ExternalToken.Address)
+					log.Printf("Swap event detected on  Exchainge: %s MainToken: %s External Token: %s \n", exchange.Name, tokenPair.MainToken.Address.String(), tokenPair.ExternalToken.Address.String())
+					log.Println("The block number is: ", vLog.BlockNumber)
 				}
 			}
 		}(tokenPair)
@@ -368,43 +397,51 @@ func (cfg *Config) watchSwapForExchange(client *ethclient.Client, exchange Decen
 	// Block the goroutine indefinitely
 	select {}
 }
-func (cfg *Config) handleSwapEvent(vLog types.Log, pair *arbitrageABI.UniswapV2Pair, exchangeName string) {
-	//swapEvent := new(arbitrageABI.UniswapV2PairSwap)
-	//err := pair.UnpackLog(swapEvent, "Swap", vLog)
-	//if err != nil {
-	//	log.Println("Failed to unpack swap event:", err)
-	//	return
-	//}
-	//
-	//log.Printf("Swap event detected on %s: %s/%s\n", exchangeName, swapEvent.Amount0In.String(), swapEvent.Amount1Out.String())
 
-	// Here you would add the logic to determine if an arbitrage opportunity exists and execute the trade if it does.
-	// For example:
-	// - Fetch the current prices on both exchanges
-	// - Calculate the price difference
-	// - If the difference is profitable, execute the trade
+func (cfg *Config) HandleSwapEvent(vLog types.Log, exchangeName string, pairAddress, mainToken, externalToken common.Address) {
+	// Extract relevant information from the event log
+	// todo: get the log informations
+
+	// Calculate price difference using the helper
+	params := CalculatePriceDifferenceParams{
+		ExchangeName:  exchangeName,
+		MainToken:     mainToken,
+		ExternalToken: externalToken,
+		PairAddress:   pairAddress,
+	}
+	cfg.CalculatePriceDifference(params)
+
+	// Identify profitable opportunities and execute trades
 
 }
 
-func (cfg *Config) Load() (*Config, error) {
+type CalculatePriceDifferenceParams struct {
+	ExchangeName  string
+	MainToken     common.Address
+	ExternalToken common.Address
+	PairAddress   common.Address
+}
 
-	cfg = cfg.SetupRPCURL()
-	cfg = cfg.SetupDecentralizedExchange()
-	cfg = cfg.SetupMainTokenAddress()
+type PriceDifferenceExchange struct {
+	ExchangeName string
+}
 
-	//cfg, err := cfg.SetupTokens()
-	//if err != nil {
-	//	return nil, err
-	//}
-	cfg, err := cfg.LoadDexTokensFromFile()
-	if err != nil {
-		return nil, err
+func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParams) {
+	helper := NewHelper(cfg.ETHClient)
+
+	for _, exchange := range cfg.DecentralizedExchanges {
+		if exchange.Name == params.ExchangeName {
+			// Perform calculations for the specified exchange
+			reserves, err := helper.GetReserves(params.PairAddress)
+			if err != nil {
+				log.Printf("Error getting reserves for exchange %s: %v\n", exchange.Name, err)
+				return
+			}
+
+			price := helper.CalculatePrice(reserves)
+			log.Println("The price gotten from  the calculating reserves: ", price)
+
+		}
 	}
 
-	err = cfg.WatchSwap()
-	if err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
 }
