@@ -6,13 +6,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"io/ioutil"
 	"log"
 	"math/big"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -24,11 +28,14 @@ type ConfigInterface interface {
 	SetupRPCURL() *Config
 	SetupDecentralizedExchange() *Config
 	SetupMainTokenAddress() *Config
+	SetupArbitrageAddress() *Config
+	SetupAuthentication() *Config
 	SetupTokens() (*Config, error)
 	Setup() (*Config, error)
 	WatchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange)
-	HandleSwapEvent(vLog types.Log, exchangeName string, pairAddress, mainToken, externalToken common.Address)
+	HandleSwapEvent(vLog types.Log, exchangeName, routerV2 string, pairAddress, mainToken, externalToken common.Address)
 	CalculatePriceDifference(params CalculatePriceDifferenceParams)
+	SetupHelper() *Config
 }
 
 func NewConfig() ConfigInterface {
@@ -43,6 +50,10 @@ type Config struct {
 	WSSRPCURL              string
 	MainTokenAddress       common.Address
 	ETHClient              *ethclient.Client
+	ArbitrageAddress       common.Address
+	Arbitrage              *arbitrageABI.Arbitrage
+	Authentication         *bind.TransactOpts
+	Helper                 HelperInterface
 }
 
 type DecentralizedExchange struct {
@@ -64,8 +75,12 @@ type Tokens struct {
 
 func (cfg *Config) Setup() (*Config, error) {
 	cfg.SetupRPCURL()
+	cfg.SetUpRPCURLList()
 	cfg.SetupDecentralizedExchange()
 	cfg.SetupMainTokenAddress()
+	cfg.SetupArbitrageAddress()
+	cfg.SetupHelper()
+	cfg.SetupAuthentication()
 
 	ethClient, err := cfg.SetupETHClient(cfg.HTTPRPCURL)
 	if err != nil {
@@ -86,7 +101,6 @@ func (cfg *Config) Setup() (*Config, error) {
 }
 func (cfg *Config) SetupRPCURL() *Config {
 	cfg.HTTPRPCURL = "https://bsc-mainnet.core.chainstack.com/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
-	//cfg.HTTPRPCURL = "https://bsc-dataseed1.binance.org"                                        // rpc-url needed
 	cfg.WSSRPCURL = "wss://bsc-mainnet.core.chainstack.com/ws/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
 	return cfg
 }
@@ -99,7 +113,7 @@ func (cfg *Config) SetupETHClient(rpcURL string) (*ethclient.Client, error) {
 	return ethclient.NewClient(client), nil
 }
 
-func (cfg *Config) setUpRPCURLList() *Config {
+func (cfg *Config) SetUpRPCURLList() *Config {
 	cfg.HTTPRPCURLList = []string{
 		"https://bsc-dataseed1.binance.org/",
 		"https://bsc-dataseed2.binance.org/",
@@ -151,7 +165,60 @@ func (cfg *Config) SetupDecentralizedExchange() *Config {
 }
 
 func (cfg *Config) SetupMainTokenAddress() *Config {
-	cfg.MainTokenAddress = common.HexToAddress("0xe9e7cea3dedca5984780bafc599bd69add087d56")
+	cfg.MainTokenAddress = common.HexToAddress(os.Getenv("MAIN_TOKEN_ADDRESS"))
+	return cfg
+}
+
+func (cfg *Config) SetupArbitrageAddress() *Config {
+	var err error
+
+	cfg.ArbitrageAddress = common.HexToAddress(os.Getenv("ARBITRAGE_ADDRESS"))
+
+	cfg.Arbitrage, err = arbitrageABI.NewArbitrage(cfg.ArbitrageAddress, cfg.ETHClient)
+	if err != nil {
+		log.Fatal("Error creating arbitrage contract:", err)
+		return nil
+	}
+
+	return cfg
+}
+
+func (cfg *Config) SetupAuthentication() *Config {
+	chainIDStr := os.Getenv("CHAIN_ID")
+	if chainIDStr == "" {
+		log.Fatalf("CHAIN_ID environment variable not set")
+	}
+	chainIDInt, err := strconv.Atoi(chainIDStr)
+	if err != nil {
+		log.Fatalf("Failed to convert CHAIN_ID to integer: %v", err)
+	}
+	chainID := big.NewInt(int64(chainIDInt))
+
+	privateKeyHex := os.Getenv("PRIVATE_KEY")
+	if privateKeyHex == "" {
+		log.Fatalf("PRIVATE_KEY environment variable not set")
+	}
+
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		log.Fatalf("Failed to convert private key: %v", err)
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		log.Fatalf("Failed to create authorized transactor: %v", err)
+	}
+
+	auth.GasLimit = uint64(300000)
+	auth.GasPrice = big.NewInt(20000000000)
+
+	cfg.Authentication = auth
+	return cfg
+}
+
+func (cfg *Config) SetupHelper() *Config {
+	helper := NewHelper(cfg.ETHClient)
+	cfg.Helper = helper
 	return cfg
 }
 
@@ -418,7 +485,7 @@ func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange Decen
 					}
 					lastBlock.SetUint64(vLog.BlockNumber)
 
-					cfg.HandleSwapEvent(vLog, exchange.Name, pairAddress, tokenPair.MainToken.Address, tokenPair.ExternalToken.Address)
+					cfg.HandleSwapEvent(vLog, exchange.Name, exchange.RouterV2, pairAddress, tokenPair.MainToken.Address, tokenPair.ExternalToken.Address)
 					log.Printf("Swap event detected on  Exchainge: %s MainToken: %s External Token: %s \n", exchange.Name, tokenPair.MainToken.Address.String(), tokenPair.ExternalToken.Address.String())
 				}
 			}
@@ -432,26 +499,25 @@ func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange Decen
 	select {}
 }
 
-func (cfg *Config) HandleSwapEvent(vLog types.Log, exchangeName string, pairAddress, mainToken, externalToken common.Address) {
+func (cfg *Config) HandleSwapEvent(vLog types.Log, exchangeName, routerV2 string, pairAddress, mainToken, externalToken common.Address) {
 	// Extract relevant information from the event log
 	// todo: get the log informations
 
 	// Calculate price difference using the helper
 	params := CalculatePriceDifferenceParams{
 		ExchangeName:  exchangeName,
+		RouterV2:      routerV2,
 		MainToken:     mainToken,
 		ExternalToken: externalToken,
 		PairAddress:   pairAddress,
 		Log:           vLog,
 	}
 	cfg.CalculatePriceDifference(params)
-
-	// Identify profitable opportunities and execute trades
-
 }
 
 type CalculatePriceDifferenceParams struct {
 	ExchangeName  string
+	RouterV2      string
 	MainToken     common.Address
 	ExternalToken common.Address
 	PairAddress   common.Address
@@ -465,18 +531,17 @@ type PriceDifferenceExchange struct {
 func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParams) {
 	var mainExchangePrice *big.Float
 	var threshold float64 = 0.5
-
-	helper := NewHelper(cfg.ETHClient)
+	var printAmount *big.Int = big.NewInt(20)
 
 	for _, exchange := range cfg.DecentralizedExchanges {
 		if exchange.Name == params.ExchangeName {
 			// Perform calculations for the specified exchange
-			reserves, err := helper.GetReserves(params.PairAddress)
+			reserves, err := cfg.Helper.GetReserves(params.PairAddress)
 			if err != nil {
 				log.Printf("Error getting reserves for exchange %s: %v\n", exchange.Name, err)
 			}
 
-			mainExchangePrice = helper.CalculatePrice(reserves)
+			mainExchangePrice = cfg.Helper.CalculatePrice(reserves)
 		}
 	}
 
@@ -485,24 +550,40 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 		if exchange.Name != params.ExchangeName {
 
 			factory := common.HexToAddress(exchange.FactoryAddress)
-			pairAddress, err := helper.GetPair(factory, params.MainToken, params.ExternalToken)
+			pairAddress, err := cfg.Helper.GetPair(factory, params.MainToken, params.ExternalToken)
 			if err != nil {
 				log.Println("Error getting pair on ")
 			}
 
-			reserves, err := helper.GetReserves(pairAddress)
+			reserves, err := cfg.Helper.GetReserves(pairAddress)
 			if err != nil {
 				log.Printf("Error getting reserves for exchange %s: %v\n\n", exchange.Name, err)
 			}
 
-			externalExchangePrice := helper.CalculatePrice(reserves)
+			externalExchangePrice := cfg.Helper.CalculatePrice(reserves)
 
-			isArbitrage, direction := helper.CheckArbitrageOpportunity(mainExchangePrice, externalExchangePrice, threshold)
+			isArbitrage, direction := cfg.Helper.CheckArbitrageOpportunity(mainExchangePrice, externalExchangePrice, threshold)
 			if isArbitrage {
 				if direction == "AtoB" {
-					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v , Sell on %s at %v and the block number is %v and the token is %v \n", params.ExchangeName, mainExchangePrice, exchange.Name, externalExchangePrice, params.Log.BlockNumber, params.ExternalToken)
+					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v , Sell on %s at %v and the block number is %v and the token is %v \n",
+						params.ExchangeName, mainExchangePrice, exchange.Name, externalExchangePrice, params.Log.BlockNumber, params.ExternalToken)
+
+					transactionPrint, err := cfg.Arbitrage.PrintMoney(cfg.Authentication,
+						common.HexToAddress(params.RouterV2), common.HexToAddress(exchange.RouterV2), params.MainToken, params.ExternalToken, printAmount)
+					if err != nil {
+						return
+					}
+					log.Println("The transaction Printed is: ", transactionPrint)
 				} else {
-					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v, Sell on %s at %v  and the block number is %v annd the token is %v\n", exchange.Name, externalExchangePrice, params.ExchangeName, mainExchangePrice, params.Log.BlockNumber, params.ExternalToken)
+					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v, Sell on %s at %v  and the block number is %v annd the token is %v\n",
+						exchange.Name, externalExchangePrice, params.ExchangeName, mainExchangePrice, params.Log.BlockNumber, params.ExternalToken)
+
+					transactionPrint, err := cfg.Arbitrage.PrintMoney(cfg.Authentication,
+						common.HexToAddress(exchange.RouterV2), common.HexToAddress(params.RouterV2), params.MainToken, params.ExternalToken, printAmount)
+					if err != nil {
+						return
+					}
+					log.Println("The transaction Printed is: ", transactionPrint)
 				}
 			} else {
 				fmt.Println("No arbitrage opportunity.")

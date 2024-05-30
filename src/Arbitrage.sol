@@ -47,7 +47,7 @@ contract Arbitrage {
     /*
     @param _startOnUniswap : the router to start the arbitrage on
     @param _endSwapAddress : the router to end the arbitrage on
-    @param _token0 : the address of the first token
+    @param _token0 : the address of the first token which is the main token and could be the stable coin
     @param _token1 : the address of the second token
     */
     function printMoney(
@@ -55,18 +55,18 @@ contract Arbitrage {
         address _endSwapAddress,
         address _token0,
         address _token1,
-        uint256 _flashAmount
+        uint256 _printAmount
     ) external onlyOwner {
         // Make the Arbitrage Logic
         address[] memory path = new address[](2);
 
         path[0] = _token0;
         path[1] = _token1;
-        _swapTokens(path, _flashAmount, 0, _startSwapAddress);
+        _swapTokens(path, _printAmount, 0, _startSwapAddress);
 
         path[0] = _token1;
         path[1] = _token0;
-        _swapTokens(path, IERC20(_token1).balanceOf(address(this)), _flashAmount, _endSwapAddress);
+        _swapTokens(path, IERC20(_token1).balanceOf(address(this)), _printAmount, _endSwapAddress);
 
         IERC20(_token0).transfer(owner, IERC20(_token0).balanceOf(address(this)));
     }
