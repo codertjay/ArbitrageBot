@@ -31,7 +31,7 @@ var (
 
 // ArbitrageMetaData contains all meta data concerning the Arbitrage contract.
 var ArbitrageMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"constructor\",\"inputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"receive\",\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"owner\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"printMoney\",\"inputs\":[{\"name\":\"_startSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_endSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token0\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token1\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_flashAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"routerAddresses\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"routers\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractIUniswapV2Router02\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"withdrawERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawEther\",\"inputs\":[{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"error\",\"name\":\"Arbitrage__OnlyOwner\",\"inputs\":[]}]",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"receive\",\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"owner\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"printMoney\",\"inputs\":[{\"name\":\"_startSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_endSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token0\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token1\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_printAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"routerAddresses\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"routers\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractIUniswapV2Router02\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"withdrawERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawEther\",\"inputs\":[{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"error\",\"name\":\"Arbitrage__OnlyOwner\",\"inputs\":[]}]",
 }
 
 // ArbitrageABI is the input ABI used to generate the binding from.
@@ -275,23 +275,23 @@ func (_Arbitrage *ArbitrageCallerSession) Routers(arg0 common.Address) (common.A
 
 // PrintMoney is a paid mutator transaction binding the contract method 0xd874cc20.
 //
-// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_Arbitrage *ArbitrageTransactor) PrintMoney(opts *bind.TransactOpts, _startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _Arbitrage.contract.Transact(opts, "printMoney", _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
+// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _printAmount) returns()
+func (_Arbitrage *ArbitrageTransactor) PrintMoney(opts *bind.TransactOpts, _startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _printAmount *big.Int) (*types.Transaction, error) {
+	return _Arbitrage.contract.Transact(opts, "printMoney", _startSwapAddress, _endSwapAddress, _token0, _token1, _printAmount)
 }
 
 // PrintMoney is a paid mutator transaction binding the contract method 0xd874cc20.
 //
-// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_Arbitrage *ArbitrageSession) PrintMoney(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _Arbitrage.Contract.PrintMoney(&_Arbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
+// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _printAmount) returns()
+func (_Arbitrage *ArbitrageSession) PrintMoney(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _printAmount *big.Int) (*types.Transaction, error) {
+	return _Arbitrage.Contract.PrintMoney(&_Arbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _printAmount)
 }
 
 // PrintMoney is a paid mutator transaction binding the contract method 0xd874cc20.
 //
-// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_Arbitrage *ArbitrageTransactorSession) PrintMoney(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _Arbitrage.Contract.PrintMoney(&_Arbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
+// Solidity: function printMoney(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _printAmount) returns()
+func (_Arbitrage *ArbitrageTransactorSession) PrintMoney(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _printAmount *big.Int) (*types.Transaction, error) {
+	return _Arbitrage.Contract.PrintMoney(&_Arbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _printAmount)
 }
 
 // WithdrawERC20 is a paid mutator transaction binding the contract method 0xa1db9782.

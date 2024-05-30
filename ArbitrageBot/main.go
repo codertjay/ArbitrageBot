@@ -13,10 +13,11 @@ import (
 func main() {
 	configInterface := configurations.NewConfig()
 
-	cfg, err := configInterface.Setup()
+	_, err := configInterface.Setup()
 	if err != nil {
 		log.Println("An error occurred ", err)
 	}
-	log.Println(cfg)
 
+	log.Println("Arbitrage bot is running...")
+	select {} // Block forever
 }
