@@ -23,9 +23,9 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     }
 
     modifier onlyVault() {
-        /*if (msg.sender != address(vault)) {
+        if (msg.sender != address(vault)) {
             revert Arbitrage__OnlyOwner();
-        }*/
+        }
         _;
     }
 

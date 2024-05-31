@@ -1,3 +1,5 @@
+
+// For Binance Smart Chain
 [
   {
     "MainToken": {
@@ -453,6 +455,276 @@
       "Name": "",
       "Decimal": 0,
       "Address": "0x947950bcc74888a40ffa2593c5798f11fc9124c4"
+    }
+  }
+]
+
+
+
+// For Polygon
+[
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x831753dd7087cac61ab5644b308642cc1c33dc13"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xb33eaad8d922b1083446dc23f610c2567fb5180f"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x3cef98bb43d732e2f285ee605a8158cde967d219"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x3a3df212b7aa91aa0402b9035b098891d276572b"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x24834bbec7e39ef42f4a75eaf8e5b6486d3f0e57"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x6f57ec3c983a04c9bf9958c9e908c39a3cd0870d"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xbe9512e2754cb938dd69bbb96c8a09cb28a02d6d"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x0f4044f4475b7ec4bde170146ad02a9cd3ad4853"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x4c28f48448720e9000907bc2611f73022fdce1fa"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xaaa5b9e6c589642f98a1cda99b9d024b8407285a"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xb1cb4ac6b1685dcbe691b9246406748805aa6fa8"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xacd7b3d9c10e97d0efa418903c0c7669e702e4c0"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x72572ccf5208b59f4bcc14e6653d8c31cd1fc5a0"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xb371248dd0f9e4061ccf8850e9223ca48aa7ca4b"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc168e40227e4ebd8c1cae80f7a55a4f0e6d66c97"
+    }
+  },
+  {
+    "MainToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+    },
+    "ExternalToken": {
+      "Name": "",
+      "Decimal": 0,
+      "Address": "0x42dbbd5ae373fea2fc320f62d44c058522bb3758"
     }
   }
 ]

@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="" />
+    <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/informations.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/informations.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_tokens.json" beforeDir="false" afterPath="$PROJECT_DIR$/tokens.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/script/DeployFlashLoanArbitrage.s.sol" beforeDir="false" afterPath="$PROJECT_DIR$/script/DeployFlashLoanArbitrage.s.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tokens.json" beforeDir="false" afterPath="$PROJECT_DIR$/tokens.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

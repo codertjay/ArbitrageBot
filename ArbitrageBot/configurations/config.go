@@ -32,6 +32,8 @@ type ConfigInterface interface {
 	SetupArbitrageAddress() *Config
 	SetupAuthentication() *Config
 	SetupTokens() (*Config, error)
+	SetupETHClient(rpcURL string) (*ethclient.Client, error)
+	SetUpRPCURLList() *Config
 	Setup() (*Config, error)
 	WatchSwapForExchange(client *ethclient.Client, exchange DecentralizedExchange)
 	HandleSwapEvent(vLog types.Log, exchangeName, routerV2 string, pairAddress, mainToken, externalToken common.Address)
@@ -52,7 +54,7 @@ type Config struct {
 	MainTokenAddress       common.Address
 	ETHClient              *ethclient.Client
 	ArbitrageAddress       common.Address
-	Arbitrage              *arbitrageABI.Arbitrage
+	Arbitrage              *arbitrageABI.FlashLoanArbitrage
 	Authentication         *bind.TransactOpts
 	Helper                 HelperInterface
 }
@@ -95,20 +97,20 @@ func (cfg *Config) Setup() (*Config, error) {
 	}
 	cfg.ETHClient = ethClient
 
-	cfg, err = cfg.SetupTokens()
+	cfg, err = cfg.LoadDexTokensFromFile()
 	if err != nil {
 		return nil, err
 	}
 
-	//err = cfg.WatchSwap()
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = cfg.WatchSwap()
+	if err != nil {
+		return nil, err
+	}
 	return cfg, nil
 }
 func (cfg *Config) SetupRPCURL() *Config {
-	cfg.HTTPRPCURL = "https://polygon-mainnet.core.chainstack.com/881545531adfeb6345017a7c6dd6b0a5" // rpc-url needed
-	cfg.WSSRPCURL = "wss://polygon-mainnet.core.chainstack.com/881545531adfeb6345017a7c6dd6b0a5"    // rpc-url needed
+	cfg.HTTPRPCURL = "https://polygon-mainnet.alchemyapi.io/v2/hZTOBez0ePl4QNAqvmSuKc7TgHpkmPWb"
+	cfg.WSSRPCURL = "wss://polygon-mainnet.core.chainstack.com/881545531adfeb6345017a7c6dd6b0a5"
 	return cfg
 }
 
@@ -122,18 +124,18 @@ func (cfg *Config) SetupETHClient(rpcURL string) (*ethclient.Client, error) {
 
 func (cfg *Config) SetUpRPCURLList() *Config {
 	cfg.HTTPRPCURLList = []string{
-		"https://bsc-dataseed1.binance.org/",
-		"https://bsc-dataseed2.binance.org/",
-		"https://bsc-dataseed3.binance.org/",
-		"https://bsc-dataseed4.binance.org/",
-		"https://bsc-dataseed1.defibit.io/",
-		"https://bsc-dataseed2.defibit.io/",
-		"https://bsc-dataseed3.defibit.io/",
-		"https://bsc-dataseed4.defibit.io/",
-		"https://bsc-dataseed1.ninicoin.io/",
-		"https://bsc-dataseed2.ninicoin.io/",
-		"https://bsc-dataseed3.ninicoin.io/",
-		"https://bsc-dataseed4.ninicoin.io/",
+		"https://eth-mainnet.alchemyapi.io/v2/_E_R6fq4lVfmVYxXBFvuMQ0vL7pCW9Jk",
+		"https://eth-mainnet.alchemyapi.io/v2/Jhcj8wHIUWJEe__0oMD8VW7nNZh8ZwKp",
+		"https://eth-mainnet.alchemyapi.io/v2/ydQb_t8kmgv_Q8lBoXYxD9wRJOP0SYFA",
+		"https://eth-mainnet.alchemyapi.io/v2/psn_5bn2xDgaZ6JrcW4Pthht1YLaKx6e",
+		"https://eth-mainnet.alchemyapi.io/v2/DBBhNLOybHWsr_Rj_iT-m5K9dPWVfsAw",
+		"https://eth-mainnet.alchemyapi.io/v2/MqotdQE4eTNuHJa165AVlJw8d7iu1lyV",
+		"https://eth-mainnet.alchemyapi.io/v2/CDRsfhmJ3sfhou6IeQY5kEadLr08Cyn1",
+		"https://eth-mainnet.alchemyapi.io/v2/udtdESou598cCF8AwxFDwwjNlngtF860",
+		"https://eth-mainnet.alchemyapi.io/v2/zXGOpsx4OFS0OhrxuBlpWHaCdshXtYAt",
+		"https://eth-mainnet.alchemyapi.io/v2/v314L6MKTskIeFD4nXB-OEPeFrfWJ0ey",
+		"https://eth-mainnet.alchemyapi.io/v2/vJfuk98N3ctdLMM1ZWuqHKBftqXxNnBR",
+		"https://eth-mainnet.alchemyapi.io/v2/0AYzfz3g8RnWaWCABo2GMTfS_5IkV1JD",
 	}
 
 	return cfg
@@ -171,7 +173,7 @@ func (cfg *Config) SetupArbitrageAddress() *Config {
 
 	cfg.ArbitrageAddress = common.HexToAddress(os.Getenv("ARBITRAGE_ADDRESS"))
 
-	cfg.Arbitrage, err = arbitrageABI.NewArbitrage(cfg.ArbitrageAddress, cfg.ETHClient)
+	cfg.Arbitrage, err = arbitrageABI.NewFlashLoanArbitrage(cfg.ArbitrageAddress, cfg.ETHClient)
 	if err != nil {
 		log.Fatal("Error creating arbitrage contract:", err)
 		return nil
@@ -227,7 +229,7 @@ type DexTokens struct {
 
 func (cfg *Config) SetupTokens() (*Config, error) {
 	var dexTokens []DexTokens
-	const maxConcurrentGoroutines = 10
+	const maxConcurrentGoroutines = 10000
 
 	semaphore := make(chan struct{}, maxConcurrentGoroutines)
 	var wg sync.WaitGroup
@@ -251,6 +253,9 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 			log.Fatal("an error occurred getting the total pairs", err)
 		}
 
+		// Create a rate limiter that allows 5 calls per second
+		rateLimit := time.Tick(time.Second / 5)
+
 		// Iterate over all pairs and check if they contain WBNB
 		for i := big.NewInt(0); i.Cmp(totalPairs) < 0; i.Add(i, big.NewInt(1)) {
 			semaphore <- struct{}{}
@@ -258,7 +263,11 @@ func (cfg *Config) SetupTokens() (*Config, error) {
 
 			go func(i *big.Int) {
 				defer wg.Done()
-				defer func() { <-semaphore }()
+				defer func() {
+					<-semaphore
+				}()
+
+				<-rateLimit
 
 				pairAddress, err := factory.AllPairs(nil, i)
 				if err != nil {
@@ -415,10 +424,17 @@ func (cfg *Config) WatchSwap() error {
 	}
 
 	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 1)
+
 	for _, exchange := range cfg.DecentralizedExchanges {
 		wg.Add(1)
+		semaphore <- struct{}{}
+
 		go func(exchange DecentralizedExchange) {
 			defer wg.Done()
+			defer func() {
+				<-semaphore
+			}()
 			cfg.WatchSwapForExchange(client, exchange)
 		}(exchange)
 	}
@@ -436,7 +452,7 @@ func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange Decen
 	}
 
 	// Create a rate limiter that allows 5 calls per second
-	rateLimit := time.Tick(time.Second / 5)
+	rateLimit := time.Tick(time.Second / 10)
 	var wg sync.WaitGroup
 
 	for _, tokenPair := range cfg.Tokens {
@@ -449,7 +465,13 @@ func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange Decen
 
 			pairAddress, err := factory.GetPair(nil, tokenPair.MainToken.Address, tokenPair.ExternalToken.Address)
 			if err != nil {
-				log.Fatalf("Failed to get pair address: %v", err)
+				log.Println("Failed to get pair address: %v", err)
+				return
+			}
+
+			if pairAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
+				log.Println("Invalid pair address, skipping...")
+				return
 			}
 
 			log.Println("The exchange Name ", exchange.Name, "\n The Pair Address pairAddress: ", pairAddress.String(), "\n The Main Token :", tokenPair.MainToken.Address.String(),
@@ -498,7 +520,7 @@ func (cfg *Config) WatchSwapForExchange(client *ethclient.Client, exchange Decen
 
 func (cfg *Config) HandleSwapEvent(vLog types.Log, exchangeName, routerV2 string, pairAddress, mainToken, externalToken common.Address) {
 	// Extract relevant information from the event log
-	// todo: get the log informations
+	// todo: get the log information's
 
 	// Calculate price difference using the helper
 	params := CalculatePriceDifferenceParams{
@@ -528,7 +550,10 @@ type PriceDifferenceExchange struct {
 func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParams) {
 	var mainExchangePrice *big.Float
 	var threshold float64 = 0.5
-	var printAmount *big.Int = big.NewInt(20)
+	// Define the print amount as 20 tokens with 18 decimals
+	tokenDecimals := 18
+	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
+	printAmount.Mul(printAmount, big.NewInt(20)) // 20 * 10^18
 
 	for _, exchange := range cfg.DecentralizedExchanges {
 		if exchange.Name == params.ExchangeName {
@@ -536,6 +561,7 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 			reserves, err := cfg.Helper.GetReserves(params.PairAddress)
 			if err != nil {
 				log.Printf("Error getting reserves for exchange %s: %v\n", exchange.Name, err)
+				return
 			}
 
 			mainExchangePrice = cfg.Helper.CalculatePrice(reserves)
@@ -550,11 +576,13 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 			pairAddress, err := cfg.Helper.GetPair(factory, params.MainToken, params.ExternalToken)
 			if err != nil {
 				log.Println("Error getting pair on ")
+				return
 			}
 
 			reserves, err := cfg.Helper.GetReserves(pairAddress)
 			if err != nil {
 				log.Printf("Error getting reserves for exchange %s: %v\n\n", exchange.Name, err)
+				return
 			}
 
 			externalExchangePrice := cfg.Helper.CalculatePrice(reserves)
@@ -565,7 +593,7 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v , Sell on %s at %v and the block number is %v and the token is %v \n",
 						params.ExchangeName, mainExchangePrice, exchange.Name, externalExchangePrice, params.Log.BlockNumber, params.ExternalToken)
 
-					transactionPrint, err := cfg.Arbitrage.PrintMoney(cfg.Authentication,
+					transactionPrint, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
 						common.HexToAddress(params.RouterV2), common.HexToAddress(exchange.RouterV2), params.MainToken, params.ExternalToken, printAmount)
 					if err != nil {
 						return
@@ -575,7 +603,7 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v, Sell on %s at %v  and the block number is %v annd the token is %v\n",
 						exchange.Name, externalExchangePrice, params.ExchangeName, mainExchangePrice, params.Log.BlockNumber, params.ExternalToken)
 
-					transactionPrint, err := cfg.Arbitrage.PrintMoney(cfg.Authentication,
+					transactionPrint, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
 						common.HexToAddress(exchange.RouterV2), common.HexToAddress(params.RouterV2), params.MainToken, params.ExternalToken, printAmount)
 					if err != nil {
 						return

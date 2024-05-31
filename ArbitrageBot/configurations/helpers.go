@@ -50,7 +50,7 @@ type Reserves struct {
 
 // GetReserves retrieves reserves of the pair
 func (h *Helper) GetReserves(pairAddress common.Address) (*Reserves, error) {
-	// Instantiate a contract object for the pair
+
 	pair, err := arbitrageABI.NewUniswapV2Pair(pairAddress, h.client)
 	if err != nil {
 		return nil, err
