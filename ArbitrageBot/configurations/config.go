@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/joho/godotenv"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -74,6 +75,12 @@ type Tokens struct {
 }
 
 func (cfg *Config) Setup() (*Config, error) {
+	// Load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	cfg.SetupRPCURL()
 	cfg.SetUpRPCURLList()
 	cfg.SetupDecentralizedExchange()
@@ -88,20 +95,20 @@ func (cfg *Config) Setup() (*Config, error) {
 	}
 	cfg.ETHClient = ethClient
 
-	cfg, err = cfg.LoadDexTokensFromFile()
+	cfg, err = cfg.SetupTokens()
 	if err != nil {
 		return nil, err
 	}
 
-	err = cfg.WatchSwap()
-	if err != nil {
-		return nil, err
-	}
+	//err = cfg.WatchSwap()
+	//if err != nil {
+	//	return nil, err
+	//}
 	return cfg, nil
 }
 func (cfg *Config) SetupRPCURL() *Config {
-	cfg.HTTPRPCURL = "https://bsc-mainnet.core.chainstack.com/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
-	cfg.WSSRPCURL = "wss://bsc-mainnet.core.chainstack.com/ws/2b143ce4e436f2bc1261f7b0851d272d" // rpc-url needed
+	cfg.HTTPRPCURL = "https://polygon-mainnet.core.chainstack.com/881545531adfeb6345017a7c6dd6b0a5" // rpc-url needed
+	cfg.WSSRPCURL = "wss://polygon-mainnet.core.chainstack.com/881545531adfeb6345017a7c6dd6b0a5"    // rpc-url needed
 	return cfg
 }
 
@@ -135,30 +142,20 @@ func (cfg *Config) SetUpRPCURLList() *Config {
 func (cfg *Config) SetupDecentralizedExchange() *Config {
 	cfg.DecentralizedExchanges = []DecentralizedExchange{
 		{
-			Name:           "PANCAKESWAP",
-			RouterV2:       "0x10ED43C718714eb63d5aA57B78B54704E256024E",
-			FactoryAddress: "0xBCfCcbde45cE874adCB698cC183deBcF17952812",
+			Name:           "QUICKSWAP",
+			RouterV2:       "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
+			FactoryAddress: "0x5757371414417b8c6caad45baef941abc7d3ab32",
 		},
 		{
-			Name:           "APESWAP",
-			RouterV2:       "0xcF0feBd3f17CEf5b47b0cD257aCf6025c5BFf3b7",
-			FactoryAddress: "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
+			Name:           "SUSHISWAP",
+			RouterV2:       "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506",
+			FactoryAddress: "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
 		},
-		//{
-		//	Name:           "BAKERYSWAP",
-		//	RouterV2:       "0xCDe540d7eAFE93aC5fE6233Bee57E1270D3E330F",
-		//	FactoryAddress: "0x01bF7C66C6BD861915Cdaae475042d3c4BA9eF5d",
-		//},
-		//{
-		//	Name:           "MDEX",
-		//	RouterV2:       "0xc6aF770101dA859d680E0829380748CCcD8F7984",
-		//	FactoryAddress: "0x3E5C63644E683549055b9Be8653de26E0B4CD36E",
-		//},
-		//{
-		//	Name:           "UNISWAP",
-		//	RouterV2:       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-		//	FactoryAddress: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
-		//},
+		{
+			Name:           "DFYN",
+			RouterV2:       "0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429",
+			FactoryAddress: "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B", // dont have much pairs
+		},
 	}
 
 	return cfg
@@ -230,7 +227,7 @@ type DexTokens struct {
 
 func (cfg *Config) SetupTokens() (*Config, error) {
 	var dexTokens []DexTokens
-	const maxConcurrentGoroutines = 5000
+	const maxConcurrentGoroutines = 10
 
 	semaphore := make(chan struct{}, maxConcurrentGoroutines)
 	var wg sync.WaitGroup
