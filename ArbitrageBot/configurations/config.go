@@ -87,8 +87,6 @@ func (cfg *Config) Setup() (*Config, error) {
 	cfg.SetUpRPCURLList()
 	cfg.SetupDecentralizedExchange()
 	cfg.SetupMainTokenAddress()
-	cfg.SetupArbitrageAddress()
-	cfg.SetupHelper()
 	cfg.SetupAuthentication()
 
 	ethClient, err := cfg.SetupETHClient(cfg.HTTPRPCURL)
@@ -96,6 +94,9 @@ func (cfg *Config) Setup() (*Config, error) {
 		return nil, err
 	}
 	cfg.ETHClient = ethClient
+
+	cfg.SetupHelper()
+	cfg.SetupArbitrageAddress()
 
 	cfg, err = cfg.LoadDexTokensFromFile()
 	if err != nil {
@@ -598,7 +599,7 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 					if err != nil {
 						return
 					}
-					log.Println("The transaction Printed is: ", transactionPrint)
+					log.Println("The transaction hash is: ", transactionPrint.Hash().Hex())
 				} else {
 					fmt.Printf(" Arbitrage opportunity detected: Buy on %s at %v, Sell on %s at %v  and the block number is %v annd the token is %v\n",
 						exchange.Name, externalExchangePrice, params.ExchangeName, mainExchangePrice, params.Log.BlockNumber, params.ExternalToken)
@@ -608,7 +609,7 @@ func (cfg *Config) CalculatePriceDifference(params CalculatePriceDifferenceParam
 					if err != nil {
 						return
 					}
-					log.Println("The transaction Printed is: ", transactionPrint)
+					log.Println("The transaction hash is: ", transactionPrint.Hash().Hex())
 				}
 			} else {
 				fmt.Println("No arbitrage opportunity.")
