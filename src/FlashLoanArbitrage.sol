@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/IFlashLoanRecipient.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import { console} from "forge-std/Test.sol";
 
 contract FlashLoanArbitrage is IFlashLoanRecipient {
     //////////////////
@@ -103,11 +104,14 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
 
         path[0] = token1;
         path[1] = token0;
-        _swapTokens(path, IERC20(token1).balanceOf(address(this)), flashAmount, endSwapAddress);
+
+
+        _swapTokens(path, IERC20(token1).balanceOf(address(this)), 0, endSwapAddress);
+
+        require(IERC20(token0).balanceOf(address(this)) >= flashAmount, "Arbitrage failed");
 
         // Repay the Flash Loan
         IERC20(token0).transfer(address(vault), flashAmount);
-        IERC20(token0).transfer(owner, IERC20(token0).balanceOf(address(this)));
     }
 
     /*
@@ -136,8 +140,15 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     }
 
     function withdrawERC20(address _token, uint256 _amount) external onlyOwner {
+        uint256 contractBalance = IERC20(_token).balanceOf(address(this));
+        require(contractBalance >= _amount, "Insufficient contract balance");
         IERC20(_token).transfer(owner, _amount);
     }
+
+    function withdrawAllERC20(address _token) external onlyOwner {
+        IERC20(_token).transfer(owner, IERC20(_token).balanceOf(address(this)));
+    }
+
 
     receive() external payable {}
 }
