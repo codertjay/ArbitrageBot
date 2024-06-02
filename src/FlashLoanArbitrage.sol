@@ -108,10 +108,18 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
 
         _swapTokens(path, IERC20(token1).balanceOf(address(this)), 0, endSwapAddress);
 
-        require(IERC20(token0).balanceOf(address(this)) >= flashAmount, "Arbitrage failed");
 
         // Repay the Flash Loan
-        IERC20(token0).transfer(address(vault), flashAmount);
+        console.log("Repaying Flash Loan");
+        console.log("the flash amount is %s", flashAmount);
+        console.log("the fee amount is %s", feeAmounts[0]);
+
+        require(IERC20(token0).balanceOf(address(this)) >= flashAmount, "Arbitrage failed");
+
+
+        bool transferSuccess = IERC20(token0).transfer(address(vault), flashAmount + feeAmounts[0]);
+        require(transferSuccess, "Transfer to vault failed");
+
     }
 
     /*
