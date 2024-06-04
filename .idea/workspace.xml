@@ -5,7 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/ArbitrageBot/newConfigurations/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ArbitrageBot/newConfigurations/helpers.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717313517.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717317919.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717352869.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357160.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357211.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357271.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357531.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717358966.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/check.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/check.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" beforeDir="false" afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" beforeDir="false" afterPath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" afterDir="false" />
@@ -63,7 +76,8 @@
   "keyToString": {
     "DefaultGoTemplateProperty": "Go File",
     "Go Build.go build ArbitrageBot/ArbitrageBot.executor": "Debug",
-    "Go Build.go build main.go.executor": "Debug",
+    "Go Build.go build config.go.executor": "Debug",
+    "Go Build.go build main.go.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
@@ -73,7 +87,7 @@
     "git-widget-placeholder": "master",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/codertjay/GolandProjects/ArbitrageBot",
+    "last_opened_file_path": "/Users/codertjay/GolandProjects/ArbitrageBot/ArbitrageBot",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm"
@@ -81,6 +95,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ArbitrageBot" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -88,13 +103,40 @@
       <recent name="$PROJECT_DIR$/ArbitrageBot" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go Build.go build main.go">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="ArbitrageBot" />
       <working_directory value="$PROJECT_DIR$" />
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build ArbitrageBot/ArbitrageBot" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="ArbitrageBot" />
+      <working_directory value="$PROJECT_DIR$" />
+      <EXTENSION ID="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </EXTENSION>
+      <kind value="FILE" />
+      <package value="ArbitrageBot/ArbitrageBot" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/ArbitrageBot/check.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build config.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="ArbitrageBot" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/ArbitrageBot/newConfigurations/config.go" />
       <method v="2" />
     </configuration>
     <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false" temporary="true" nameIsGenerated="true">
@@ -128,6 +170,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build ArbitrageBot/ArbitrageBot" />
+        <item itemvalue="Go Build.go build config.go" />
       </list>
     </recent_temporary>
   </component>

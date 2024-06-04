@@ -11,10 +11,10 @@ contract ArbitrageTest is Test {
     //    DeployArbitrage deployer;
     FlashLoanArbitrage public arbitrage;
 
-    address public immutable i_deployed_arbitrage = 0xff31C768f0d44Cc0166c4f6da322c63a5F1AeaE8;
+    address public immutable i_deployed_arbitrage = 0xCC5101c2080887644b19Fc71E7710f4240d4bE1A;
 
-    address public immutable i_startSwapAddress = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
-    address public immutable i_endSwapAddress = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
+    address public immutable i_startSwapAddress = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
+    address public immutable i_endSwapAddress =0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429 ;
     address public constant i_token0 = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
     address public constant i_token1 = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
@@ -64,5 +64,14 @@ contract ArbitrageTest is Test {
 
         // Assert the transfer was successful
         assertEq(finalRecipientBalance, initialRecipientBalance + initialBalance);
+    }
+
+
+    function testCheckProfitability() public{
+        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
+
+        arbitrage.checkProfitability(i_startSwapAddress, i_endSwapAddress, i_token0, i_token1, i_arbitrage_amount, 10);
+
+        vm.stopBroadcast();
     }
 }

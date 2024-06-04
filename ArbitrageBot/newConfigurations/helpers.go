@@ -1,6 +1,7 @@
-package configurations
+package newConfiguration
 
 import (
+	"log"
 	"math/big"
 
 	arbitrageABI "ArbitrageBot/ArbitrageBot/abi"
@@ -13,6 +14,7 @@ type HelperInterface interface {
 	GetReserves(pairAddress common.Address) (*Reserves, error)
 	CalculatePrice(reserves *Reserves) *big.Float
 	CalculatePriceDifference(uPrice, sPrice *big.Float) *big.Float
+	CheckArbitrageOpportunity(uPrice, sPrice *big.Float, threshold float64) (bool, string)
 }
 
 type Helper struct {
@@ -82,6 +84,25 @@ func (h *Helper) CalculatePriceDifference(uPrice, sPrice *big.Float) *big.Float 
 	difference := new(big.Float).Sub(uPrice, sPrice)
 	difference.Quo(difference, sPrice)
 	difference.Mul(difference, big.NewFloat(100))
-
 	return difference
+}
+
+// CheckArbitrageOpportunity checks if there's a profitable arbitrage opportunity
+func (h *Helper) CheckArbitrageOpportunity(priceA, priceB *big.Float, threshold float64) (bool, string) {
+	differenceAtoB := h.CalculatePriceDifference(priceA, priceB)
+	differenceBtoA := h.CalculatePriceDifference(priceB, priceA)
+	absDifferenceAtoB := new(big.Float).Abs(differenceAtoB)
+	absDifferenceBtoA := new(big.Float).Abs(differenceBtoA)
+	thresholdBig := big.NewFloat(threshold)
+
+	if absDifferenceAtoB.Cmp(thresholdBig) >= 0 {
+		log.Print("The price difference is ", absDifferenceAtoB)
+		return true, "AtoB"
+	}
+	if absDifferenceBtoA.Cmp(thresholdBig) >= 0 {
+		log.Print("The price difference is ", absDifferenceBtoA)
+
+		return true, "BtoA"
+	}
+	return false, ""
 }

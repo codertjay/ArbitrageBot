@@ -4,13 +4,14 @@ pragma solidity 0.8.20;
 import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/IFlashLoanRecipient.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import { console} from "forge-std/Test.sol";
 
 contract FlashLoanArbitrage is IFlashLoanRecipient {
     //////////////////
     // Errors   ///
     //////////////////
     error Arbitrage__OnlyOwner();
+
+
 
     ////////////////////////////////////
     // Modifiers   ///
@@ -95,6 +96,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         (address startSwapAddress, address endSwapAddress, address token0, address token1) =
             abi.decode(userData, (address, address, address, address));
 
+
         // Make the Arbitrage Logic
         address[] memory path = new address[](2);
 
@@ -105,16 +107,10 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         path[0] = token1;
         path[1] = token0;
 
-
         _swapTokens(path, IERC20(token1).balanceOf(address(this)), 0, endSwapAddress);
 
 
-        // Repay the Flash Loan
-        console.log("Repaying Flash Loan");
-        console.log("the flash amount is %s", flashAmount);
-        console.log("the fee amount is %s", feeAmounts[0]);
-
-        require(IERC20(token0).balanceOf(address(this)) >= flashAmount, "Arbitrage failed");
+        require(IERC20(token0).balanceOf(address(this)) >= flashAmount + feeAmounts[0], "Arbitrage failed");
 
 
         bool transferSuccess = IERC20(token0).transfer(address(vault), flashAmount + feeAmounts[0]);
@@ -131,7 +127,9 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     function _swapTokens(address[] memory _path, uint256 _amountIn, uint256 _amountOut, address _routerAddress)
         internal
     {
-        require(IERC20(_path[0]).approve(_routerAddress, _amountIn), "Router approval failed.");
+
+        bool success = IERC20(_path[0]).approve(address(_routerAddress), _amountIn);
+
 
         IUniswapV2Router02(_routerAddress).swapExactTokensForTokens(
             _amountIn,
@@ -140,7 +138,98 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
             address(this),
             (block.timestamp + 1200)
         );
+
     }
+
+
+
+    struct ArbitrageResult {
+        bool isProfitable;
+        string direction;
+        uint256 percentageProfit;
+    }
+
+    function checkProfitability(
+        address _startSwapAddress,
+        address _endSwapAddress,
+        address _token0,
+        address _token1,
+        uint256 _flashAmount,
+        uint256 _threshold
+    ) public view returns (ArbitrageResult memory) {
+        ArbitrageResult memory result;
+
+        // Simulate the first swap
+        address[] memory path = new address[](2);
+        path[0] = _token0;
+        path[1] = _token1;
+
+
+        uint256[] memory amountsIn = IUniswapV2Router02(_startSwapAddress).getAmountsIn(_flashAmount, path);
+        uint256 token0In = amountsIn[0];
+
+        // Simulate the second swap
+        path[0] = _token1;
+        path[1] = _token0;
+
+        uint256[] memory amountsOut = IUniswapV2Router02(_endSwapAddress).getAmountsOut(_flashAmount, path);
+        uint256 token0Out = amountsOut[1];
+
+        // Calculate gas cost (estimated)
+        uint256 estimatedGasCost = estimateGasCost();
+
+
+        if (token0Out > token0In + estimatedGasCost) {
+            // Calculate profit percentage
+            uint256 profit = token0Out - token0In - estimatedGasCost;
+            uint256 percentageProfit = (profit * 100) / token0In;
+
+
+            if (percentageProfit >= _threshold) {
+                result.isProfitable = true;
+                result.direction = "ATOB";
+                result.percentageProfit = percentageProfit;
+                return result;
+            }
+        }
+
+        // Check for BTOA
+        path[0] = _token1;
+        path[1] = _token0;
+
+        amountsIn = IUniswapV2Router02(_endSwapAddress).getAmountsIn(_flashAmount, path);
+        token0In = amountsIn[0];
+
+        amountsOut = IUniswapV2Router02(_startSwapAddress).getAmountsOut(_flashAmount, path);
+        token0Out = amountsOut[1];
+
+
+        if (token0Out > token0In + estimatedGasCost) {
+            // Calculate profit percentage
+            uint256 profit = token0Out - token0In - estimatedGasCost;
+            uint256 percentageProfit = (profit * 100) / token0In;
+
+
+            if (percentageProfit >= _threshold) {
+                result.isProfitable = true;
+                result.direction = "BTOA";
+                result.percentageProfit = percentageProfit;
+                return result;
+            }
+        }
+
+        result.isProfitable = false;
+        result.direction = "";
+        result.percentageProfit = 0;
+        return result;
+    }
+
+    function estimateGasCost() public view returns (uint256) {
+        // Gas estimation logic (e.g., specific to the operations performed)
+        uint256 gasUsed = 21000 + 100000; // Example estimation
+        return gasUsed * tx.gasprice;
+    }
+
 
     function withdrawEther(uint256 _amount) external onlyOwner {
         require(address(this).balance >= _amount, "Insufficient balance");
