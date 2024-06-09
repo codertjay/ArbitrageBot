@@ -5,20 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/ArbitrageBot/newConfigurations/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ArbitrageBot/newConfigurations/helpers.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717313517.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717317919.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717352869.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357160.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357211.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357271.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717357531.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-1717358966.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArbitrageBot/check.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/check.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/configurations/helpers.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" beforeDir="false" afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" beforeDir="false" afterPath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" afterDir="false" />
@@ -72,27 +60,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "Go Build.go build ArbitrageBot/ArbitrageBot.executor": "Debug",
-    "Go Build.go build config.go.executor": "Debug",
-    "Go Build.go build main.go.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/codertjay/GolandProjects/ArbitrageBot/ArbitrageBot",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Go Build.go build ArbitrageBot/ArbitrageBot.executor&quot;: &quot;Debug&quot;,
+    &quot;Go Build.go build config.go.executor&quot;: &quot;Debug&quot;,
+    &quot;Go Build.go build main.go.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/codertjay/GolandProjects/ArbitrageBot/ArbitrageBot&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pathVariables&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/ArbitrageBot" />

@@ -4,14 +4,13 @@ pragma solidity 0.8.20;
 import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/IFlashLoanRecipient.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import {console}  from "forge-std/Test.sol";
 
 contract FlashLoanArbitrage is IFlashLoanRecipient {
     //////////////////
     // Errors   ///
     //////////////////
     error Arbitrage__OnlyOwner();
-
-
 
     ////////////////////////////////////
     // Modifiers   ///
@@ -94,8 +93,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         uint256 flashAmount = amounts[0];
 
         (address startSwapAddress, address endSwapAddress, address token0, address token1) =
-            abi.decode(userData, (address, address, address, address));
-
+                            abi.decode(userData, (address, address, address, address));
 
         // Make the Arbitrage Logic
         address[] memory path = new address[](2);
@@ -125,7 +123,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     @param _routerAddress : the router address to swap on which can be uniswap or any v2 contract address
     */
     function _swapTokens(address[] memory _path, uint256 _amountIn, uint256 _amountOut, address _routerAddress)
-        internal
+    internal
     {
 
         bool success = IERC20(_path[0]).approve(address(_routerAddress), _amountIn);
@@ -142,11 +140,16 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     }
 
 
-
     struct ArbitrageResult {
         bool isProfitable;
         string direction;
         uint256 percentageProfit;
+        uint256 amountIn;
+        uint256 amountOut;
+    }
+
+    function getDecimals(address token) internal view returns (uint8) {
+        return IERC20(token).decimals();
     }
 
     function checkProfitability(
@@ -158,71 +161,82 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         uint256 _threshold
     ) public view returns (ArbitrageResult memory) {
         ArbitrageResult memory result;
+        uint256 flashAmount = _flashAmount;
+        uint256 _threshold = _threshold;
 
-        // Simulate the first swap
         address[] memory path = new address[](2);
         path[0] = _token0;
         path[1] = _token1;
 
+        uint8 token0Decimals = getDecimals(_token0);
+        uint8 token1Decimals = getDecimals(_token1);
 
-        uint256[] memory amountsIn = IUniswapV2Router02(_startSwapAddress).getAmountsIn(_flashAmount, path);
-        uint256 token0In = amountsIn[0];
+        console.log("the decimal 0", token0Decimals);
+        console.log("the decimal 1", token1Decimals);
 
-        // Simulate the second swap
-        path[0] = _token1;
-        path[1] = _token0;
+        uint256[] memory startSwapAmount = IUniswapV2Router02(_startSwapAddress).getAmountsOut(_flashAmount, path);
+        uint256[] memory endSwapAmount = IUniswapV2Router02(_endSwapAddress).getAmountsOut(_flashAmount, path);
 
-        uint256[] memory amountsOut = IUniswapV2Router02(_endSwapAddress).getAmountsOut(_flashAmount, path);
-        uint256 token0Out = amountsOut[1];
+        uint256 startSwapPrice = (startSwapAmount[1] * 10 ** uint256(token0Decimals)) / startSwapAmount[0];
+        uint256 endSwapPrice = (endSwapAmount[1] * 10 ** uint256(token0Decimals)) / endSwapAmount[0];
 
-        // Calculate gas cost (estimated)
-        uint256 estimatedGasCost = estimateGasCost();
+        uint256 TX_FEE = 3; // 0.3% fee, represented as 3 for easier calculations with integers
 
+        if (startSwapPrice > endSwapPrice) {
+            uint256 effStartSwapPrice = startSwapPrice * (1000 - TX_FEE) / 1000;
+            uint256 effEndSwapPrice = endSwapPrice * (1000 + TX_FEE) / 1000;
+            uint256 spread = effStartSwapPrice - effEndSwapPrice;
 
-        if (token0Out > token0In + estimatedGasCost) {
-            // Calculate profit percentage
-            uint256 profit = token0Out - token0In - estimatedGasCost;
-            uint256 percentageProfit = (profit * 100) / token0In;
+            console.log("the effStartSwapPrice is ", effStartSwapPrice);
+            console.log("the effEndSwapPrice is ", effEndSwapPrice);
+            console.log("the spread is ", spread);
 
+            if (spread > 0) {
+                uint256 profit = (_flashAmount * spread) / (10 ** uint256(token1Decimals));
+                uint256 percentageProfit = (profit * 100) / _flashAmount;
 
-            if (percentageProfit >= _threshold) {
-                result.isProfitable = true;
-                result.direction = "ATOB";
-                result.percentageProfit = percentageProfit;
-                return result;
+                if (percentageProfit >= _threshold) {
+                    return ArbitrageResult(
+                        true,
+                        "ATOB",
+                        percentageProfit,
+                        _flashAmount,
+                        profit
+                    );
+                }
             }
-        }
+        } else if (endSwapPrice > startSwapPrice) {
+            uint256 effEndSwapPrice = endSwapPrice * (1000 - TX_FEE) / 1000;
+            uint256 effStartSwapPrice = startSwapPrice * (1000 + TX_FEE) / 1000;
+            uint256 spread = effEndSwapPrice - effStartSwapPrice;
+            console.log("the spread is ", spread);
 
-        // Check for BTOA
-        path[0] = _token1;
-        path[1] = _token0;
+            if (spread > 0) {
+                uint256 profit = (_flashAmount * spread) / (10 ** uint256(token0Decimals));
+                uint256 percentageProfit = (profit * 100) / _flashAmount;
 
-        amountsIn = IUniswapV2Router02(_endSwapAddress).getAmountsIn(_flashAmount, path);
-        token0In = amountsIn[0];
-
-        amountsOut = IUniswapV2Router02(_startSwapAddress).getAmountsOut(_flashAmount, path);
-        token0Out = amountsOut[1];
-
-
-        if (token0Out > token0In + estimatedGasCost) {
-            // Calculate profit percentage
-            uint256 profit = token0Out - token0In - estimatedGasCost;
-            uint256 percentageProfit = (profit * 100) / token0In;
-
-
-            if (percentageProfit >= _threshold) {
-                result.isProfitable = true;
-                result.direction = "BTOA";
-                result.percentageProfit = percentageProfit;
-                return result;
+                if (percentageProfit >= _threshold) {
+                    return ArbitrageResult(
+                        true,
+                        "BTOA",
+                        percentageProfit,
+                        _flashAmount,
+                        profit
+                    );
+                }
             }
         }
 
         result.isProfitable = false;
         result.direction = "";
         result.percentageProfit = 0;
+        result.amountIn = _flashAmount;
+        result.amountOut = 0;
         return result;
     }
+
+
+
 
     function estimateGasCost() public view returns (uint256) {
         // Gas estimation logic (e.g., specific to the operations performed)

@@ -125,18 +125,18 @@ func (cfg *Config) SetupETHClient(rpcURL string) (*ethclient.Client, error) {
 
 func (cfg *Config) SetUpRPCURLList() *Config {
 	cfg.HTTPRPCURLList = []string{
-		"https://eth-mainnet.alchemyapi.io/v2/_E_R6fq4lVfmVYxXBFvuMQ0vL7pCW9Jk",
-		"https://eth-mainnet.alchemyapi.io/v2/Jhcj8wHIUWJEe__0oMD8VW7nNZh8ZwKp",
-		"https://eth-mainnet.alchemyapi.io/v2/ydQb_t8kmgv_Q8lBoXYxD9wRJOP0SYFA",
-		"https://eth-mainnet.alchemyapi.io/v2/psn_5bn2xDgaZ6JrcW4Pthht1YLaKx6e",
-		"https://eth-mainnet.alchemyapi.io/v2/DBBhNLOybHWsr_Rj_iT-m5K9dPWVfsAw",
-		"https://eth-mainnet.alchemyapi.io/v2/MqotdQE4eTNuHJa165AVlJw8d7iu1lyV",
-		"https://eth-mainnet.alchemyapi.io/v2/CDRsfhmJ3sfhou6IeQY5kEadLr08Cyn1",
-		"https://eth-mainnet.alchemyapi.io/v2/udtdESou598cCF8AwxFDwwjNlngtF860",
-		"https://eth-mainnet.alchemyapi.io/v2/zXGOpsx4OFS0OhrxuBlpWHaCdshXtYAt",
-		"https://eth-mainnet.alchemyapi.io/v2/v314L6MKTskIeFD4nXB-OEPeFrfWJ0ey",
-		"https://eth-mainnet.alchemyapi.io/v2/vJfuk98N3ctdLMM1ZWuqHKBftqXxNnBR",
-		"https://eth-mainnet.alchemyapi.io/v2/0AYzfz3g8RnWaWCABo2GMTfS_5IkV1JD",
+		"https://polygon-mainnet.alchemyapi.io/v2/_E_R6fq4lVfmVYxXBFvuMQ0vL7pCW9Jk",
+		"https://polygon-mainnet.alchemyapi.io/v2/Jhcj8wHIUWJEe__0oMD8VW7nNZh8ZwKp",
+		"https://polygon-mainnet.alchemyapi.io/v2/ydQb_t8kmgv_Q8lBoXYxD9wRJOP0SYFA",
+		"https://polygon-mainnet.alchemyapi.io/v2/psn_5bn2xDgaZ6JrcW4Pthht1YLaKx6e",
+		"https://polygon-mainnet.alchemyapi.io/v2/DBBhNLOybHWsr_Rj_iT-m5K9dPWVfsAw",
+		"https://polygon-mainnet.alchemyapi.io/v2/MqotdQE4eTNuHJa165AVlJw8d7iu1lyV",
+		"https://polygon-mainnet.alchemyapi.io/v2/CDRsfhmJ3sfhou6IeQY5kEadLr08Cyn1",
+		"https://polygon-mainnet.alchemyapi.io/v2/udtdESou598cCF8AwxFDwwjNlngtF860",
+		"https://polygon-mainnet.alchemyapi.io/v2/zXGOpsx4OFS0OhrxuBlpWHaCdshXtYAt",
+		"https://polygon-mainnet.alchemyapi.io/v2/v314L6MKTskIeFD4nXB-OEPeFrfWJ0ey",
+		"https://polygon-mainnet.alchemyapi.io/v2/vJfuk98N3ctdLMM1ZWuqHKBftqXxNnBR",
+		"https://polygon-mainnet.alchemyapi.io/v2/0AYzfz3g8RnWaWCABo2GMTfS_5IkV1JD",
 	}
 
 	return cfg
