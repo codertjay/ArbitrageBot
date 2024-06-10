@@ -23,17 +23,18 @@ import (
 // ConfigInterface definition remains unchanged
 
 type Config struct {
+	ETHClient              *ethclient.Client
+	Arbitrage              *arbitrageABI.FlashLoanArbitrage
+	Authentication         *bind.TransactOpts
+	Helper                 HelperInterface
 	DecentralizedExchanges []DecentralizedExchange
+	TrendingTokens         []string
 	Tokens                 []Tokens
 	HTTPRPCURLList         []string
 	HTTPRPCURL             string
 	WSSRPCURL              string
 	MainTokenAddress       common.Address
-	ETHClient              *ethclient.Client
 	ArbitrageAddress       common.Address
-	Arbitrage              *arbitrageABI.FlashLoanArbitrage
-	Authentication         *bind.TransactOpts
-	Helper                 HelperInterface
 }
 
 type DecentralizedExchange struct {
@@ -49,8 +50,8 @@ type Token struct {
 }
 
 type Tokens struct {
-	MainToken     Token // could be WBNB or WETH base on the main pairs
-	ExternalToken Token // this is the external pair
+	MainToken     Token
+	ExternalToken Token
 }
 
 func (cfg *Config) Setup() (*Config, error) {
@@ -74,7 +75,7 @@ func (cfg *Config) Setup() (*Config, error) {
 	cfg.SetupHelper()
 	cfg.SetupArbitrageAddress()
 
-	cfg, err = cfg.LoadDexTokensFromFile()
+	cfg, err = cfg.LoadTrendingTokens()
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +85,11 @@ func (cfg *Config) Setup() (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+func (cfg *Config) SetupHelper() *Config {
+	cfg.Helper = &Helper{}
+	return cfg
 }
 
 func (cfg *Config) SetupRPCURL() *Config {
@@ -125,16 +131,16 @@ func (cfg *Config) SetupDecentralizedExchange() *Config {
 			RouterV2:       "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
 			FactoryAddress: "0x5757371414417b8c6caad45baef941abc7d3ab32",
 		},
-		//{
-		//	Name:           "SUSHISWAP",
-		//	RouterV2:       "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506",
-		//	FactoryAddress: "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
-		//},
-		//{
-		//	Name:           "DFYN",
-		//	RouterV2:       "0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429",
-		//	FactoryAddress: "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B",
-		//},
+		{
+			Name:           "SUSHISWAP",
+			RouterV2:       "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506",
+			FactoryAddress: "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
+		},
+		{
+			Name:           "DFYN",
+			RouterV2:       "0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429",
+			FactoryAddress: "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B",
+		},
 	}
 	return cfg
 }
@@ -177,12 +183,7 @@ func (cfg *Config) SetupAuthentication() *Config {
 	return cfg
 }
 
-func (cfg *Config) SetupHelper() *Config {
-	cfg.Helper = &Helper{}
-	return cfg
-}
-
-func (cfg *Config) LoadDexTokensFromFile() (*Config, error) {
+func (cfg *Config) LoadTrendingTokens() (*Config, error) {
 	file, err := os.Open("tokens.json")
 	if err != nil {
 		return nil, fmt.Errorf("error opening config file: %v", err)
@@ -194,7 +195,7 @@ func (cfg *Config) LoadDexTokensFromFile() (*Config, error) {
 		return nil, fmt.Errorf("error reading config file: %v", err)
 	}
 
-	err = json.Unmarshal(bytes, &cfg.Tokens)
+	err = json.Unmarshal(bytes, &cfg.TrendingTokens)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling config file: %v", err)
 	}
@@ -213,7 +214,6 @@ func (cfg *Config) WatchSwap() error {
 	// Filter query for multiple router addresses
 	var addresses []common.Address
 	for _, dex := range cfg.DecentralizedExchanges {
-
 		addresses = append(addresses, common.HexToAddress(dex.RouterV2))
 	}
 
@@ -240,38 +240,7 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	fmt.Println("Swap event detected:")
-	fmt.Println("Address: ", vLog.Address.Hex())
-	fmt.Println("Topics: ", vLog.Topics)
-	fmt.Println("Data: ", vLog.Data)
 
-	// Decode the log event here
-	// The event signature for Uniswap V2 "Swap" event is:
-	// Swap(address indexed sender, uint amount0In, uint amount1In, uint amount0Out, uint amount1Out, address indexed to)
-	// Adjust the event signature based on the DEX you're monitoring
-
-	swapEventSignature := []byte("Swap(address,uint256,uint256,uint256,uint256,address)")
-	swapEventHash := crypto.Keccak256Hash(swapEventSignature)
-
-	if vLog.Topics[0] == swapEventHash {
-		//var sender, to common.Address
-		//var amount0In, amount1In, amount0Out, amount1Out *big.Int
-
-		//err := swapABI.UnpackIntoInterface(&swapEvent, "Swap", vLog.Data)
-		//if err != nil {
-		//	log.Fatalf("Failed to unpack log data: %v", err)
-		//}
-		//
-		//sender = common.HexToAddress(vLog.Topics[1].Hex())
-		//to = common.HexToAddress(vLog.Topics[2].Hex())
-		//amount0In = swapEvent.Amount0In
-		//amount1In = swapEvent.Amount1In
-		//amount0Out = swapEvent.Amount0Out
-		//amount1Out = swapEvent.Amount1Out
-		//
-		//fmt.Printf("Sender: %s, To: %s, Amount0In: %s, Amount1In: %s, Amount0Out: %s, Amount1Out: %s\n",
-		//	sender.Hex(), to.Hex(), amount0In.String(), amount1In.String(), amount0Out.String(), amount1Out.String())
-	}
 }
 
 func main() {
