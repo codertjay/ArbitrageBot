@@ -144,8 +144,6 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         bool isProfitable;
         string direction;
         uint256 percentageProfit;
-        uint256 amountIn;
-        uint256 amountOut;
     }
 
     function getDecimals(address token) internal view returns (uint8) {
@@ -161,81 +159,60 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         uint256 _threshold
     ) public view returns (ArbitrageResult memory) {
         ArbitrageResult memory result;
-        uint256 flashAmount = _flashAmount;
-        uint256 _threshold = _threshold;
 
         address[] memory path = new address[](2);
         path[0] = _token0;
         path[1] = _token1;
 
+        uint256 _thresholdScaled = _threshold * 100;
+
         uint8 token0Decimals = getDecimals(_token0);
         uint8 token1Decimals = getDecimals(_token1);
 
-        console.log("the decimal 0", token0Decimals);
-        console.log("the decimal 1", token1Decimals);
 
         uint256[] memory startSwapAmount = IUniswapV2Router02(_startSwapAddress).getAmountsOut(_flashAmount, path);
         uint256[] memory endSwapAmount = IUniswapV2Router02(_endSwapAddress).getAmountsOut(_flashAmount, path);
 
+
         uint256 startSwapPrice = (startSwapAmount[1] * 10 ** uint256(token0Decimals)) / startSwapAmount[0];
         uint256 endSwapPrice = (endSwapAmount[1] * 10 ** uint256(token0Decimals)) / endSwapAmount[0];
+
 
         uint256 TX_FEE = 3; // 0.3% fee, represented as 3 for easier calculations with integers
 
         if (startSwapPrice > endSwapPrice) {
             uint256 effStartSwapPrice = startSwapPrice * (1000 - TX_FEE) / 1000;
-            uint256 effEndSwapPrice = endSwapPrice * (1000 + TX_FEE) / 1000;
-            uint256 spread = effStartSwapPrice - effEndSwapPrice;
+            uint256 effEndSwapPrice = endSwapPrice * (1000 - TX_FEE) / 1000;
+            uint256 percentageDifference = ((effStartSwapPrice - effEndSwapPrice) * 10000) / effEndSwapPrice; // keeping two decimals
 
-            console.log("the effStartSwapPrice is ", effStartSwapPrice);
-            console.log("the effEndSwapPrice is ", effEndSwapPrice);
-            console.log("the spread is ", spread);
 
-            if (spread > 0) {
-                uint256 profit = (_flashAmount * spread) / (10 ** uint256(token1Decimals));
-                uint256 percentageProfit = (profit * 100) / _flashAmount;
+            if (percentageDifference >= _thresholdScaled) {
+                return ArbitrageResult(
+                    true,
+                    "ATOB",
+                    percentageDifference
+                );
 
-                if (percentageProfit >= _threshold) {
-                    return ArbitrageResult(
-                        true,
-                        "ATOB",
-                        percentageProfit,
-                        _flashAmount,
-                        profit
-                    );
-                }
             }
         } else if (endSwapPrice > startSwapPrice) {
             uint256 effEndSwapPrice = endSwapPrice * (1000 - TX_FEE) / 1000;
-            uint256 effStartSwapPrice = startSwapPrice * (1000 + TX_FEE) / 1000;
-            uint256 spread = effEndSwapPrice - effStartSwapPrice;
-            console.log("the spread is ", spread);
+            uint256 effStartSwapPrice = startSwapPrice * (1000 - TX_FEE) / 1000;
+            uint256 percentageDifference = ((effEndSwapPrice - effStartSwapPrice) * 10000) / effStartSwapPrice;
 
-            if (spread > 0) {
-                uint256 profit = (_flashAmount * spread) / (10 ** uint256(token0Decimals));
-                uint256 percentageProfit = (profit * 100) / _flashAmount;
-
-                if (percentageProfit >= _threshold) {
-                    return ArbitrageResult(
-                        true,
-                        "BTOA",
-                        percentageProfit,
-                        _flashAmount,
-                        profit
-                    );
-                }
+            if (percentageDifference >= _thresholdScaled) {
+                return ArbitrageResult(
+                    true,
+                    "BTOA",
+                    percentageDifference
+                );
             }
         }
 
         result.isProfitable = false;
         result.direction = "";
         result.percentageProfit = 0;
-        result.amountIn = _flashAmount;
-        result.amountOut = 0;
         return result;
     }
-
-
 
 
     function estimateGasCost() public view returns (uint256) {

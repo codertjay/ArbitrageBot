@@ -11,17 +11,12 @@ contract ArbitrageTest is Test {
     //    DeployArbitrage deployer;
     FlashLoanArbitrage public arbitrage;
 
-    address public immutable i_deployed_arbitrage =
-        0xA617BE9Cc7bC4bEc277Fb50e20C9376556a279d4;
+    address public immutable i_deployed_arbitrage = 0xA617BE9Cc7bC4bEc277Fb50e20C9376556a279d4;
 
-    address public immutable i_startSwapAddress =
-        0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
-    address public immutable i_endSwapAddress =
-        0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429;
-    address public constant i_token0 =
-        0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
-    address public constant i_token1 =
-        0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
+    address public immutable i_startSwapAddress = 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
+    address public immutable i_endSwapAddress = 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff;
+    address public constant i_token0 = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
+    address public constant i_token1 = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
     uint256 public constant i_arbitrage_amount = 1e6;
 
