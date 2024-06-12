@@ -122,7 +122,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     @param _routerAddress : the router address to swap on which can be uniswap or any v2 contract address
     */
     function _swapTokens(address[] memory _path, uint256 _amountIn, uint256 _amountOut, address _routerAddress)
-    internal
+    internal onlyOwner
     {
 
         bool success = IERC20(_path[0]).approve(address(_routerAddress), _amountIn);
@@ -156,7 +156,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
         address _token1,
         uint256 _flashAmount,
         uint256 _threshold
-    ) public view returns (ArbitrageResult memory) {
+    ) public  view returns (ArbitrageResult memory) {
         ArbitrageResult memory result;
 
         address[] memory path = new address[](2);

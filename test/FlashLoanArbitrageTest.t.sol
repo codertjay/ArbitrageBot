@@ -87,7 +87,7 @@ contract ArbitrageTest is Test {
             i_token0,
             i_token1,
             i_arbitrage_amount,
-            10
+            500
         );
 
         vm.stopBroadcast();

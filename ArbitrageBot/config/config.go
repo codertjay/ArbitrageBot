@@ -92,8 +92,8 @@ func (cfg *Config) Setup() (*Config, error) {
 }
 
 func (cfg *Config) SetupRPCURL() *Config {
-	cfg.HTTPRPCURL = "https://polygon-mainnet.alchemyapi.io/v2/v314L6MKTskIeFD4nXB-OEPeFrfWJ0ey"
-	cfg.WSSRPCURL = "wss://polygon-mainnet.g.alchemy.com/v2/v314L6MKTskIeFD4nXB-OEPeFrfWJ0ey"
+	cfg.HTTPRPCURL = "https://polygon-mainnet.alchemyapi.io/v2/ydQb_t8kmgv_Q8lBoXYxD9wRJOP0SYFA"
+	cfg.WSSRPCURL = "wss://polygon-mainnet.g.alchemy.com/v2/ydQb_t8kmgv_Q8lBoXYxD9wRJOP0SYFA"
 	return cfg
 }
 
@@ -282,11 +282,11 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	var threshold = big.NewInt(4)
+	var threshold = big.NewInt(500)
 	// Define the print amount as 20 tokens with 18 decimals
 	tokenDecimals := 6
 	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
-	printAmount.Mul(printAmount, big.NewInt(2000)) // 20 * 10^18
+	printAmount.Mul(printAmount, big.NewInt(200)) // 20 * 10^18
 
 	log.Printf("Log just occured %v\n", vLog.Address)
 	pairAddress := cfg.PairAddresses[vLog.Address]
@@ -308,6 +308,7 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 		if isProfitable.IsProfitable {
 
 			if isProfitable.Direction == "ATOB" {
+				log.Println("the ATOB direction", common.HexToAddress(startSwapAddress), " ", common.HexToAddress(dex.RouterV2))
 				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
 					common.HexToAddress(startSwapAddress), common.HexToAddress(dex.RouterV2), mainTokenAddress, externalTokenAddress, printAmount)
 				if err != nil {
@@ -315,7 +316,10 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 					return
 				}
 				log.Println("The transaction hash ", makeFlashLoanTX.Hash())
+
 			} else if isProfitable.Direction == "BTOA" {
+				log.Println("the BTOA direction", common.HexToAddress(dex.RouterV2), " ", common.HexToAddress(startSwapAddress))
+
 				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
 					common.HexToAddress(dex.RouterV2), common.HexToAddress(startSwapAddress), mainTokenAddress, externalTokenAddress, printAmount)
 				if err != nil {

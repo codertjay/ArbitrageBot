@@ -17,4 +17,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to set up config: %v", err)
 	}
+	select {}
 }
