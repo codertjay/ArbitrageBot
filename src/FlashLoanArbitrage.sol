@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
 import "@balancer-labs/v2-interfaces/contracts/vault/IFlashLoanRecipient.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import {console}  from "forge-std/Test.sol";
 
 contract FlashLoanArbitrage is IFlashLoanRecipient {
     //////////////////
@@ -217,7 +216,7 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
 
     function estimateGasCost() public view returns (uint256) {
         // Gas estimation logic (e.g., specific to the operations performed)
-        uint256 gasUsed = 21000 + 100000; // Example estimation
+        uint256 gasUsed = 31000 + 100000; // Example estimation
         return gasUsed * tx.gasprice;
     }
 

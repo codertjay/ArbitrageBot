@@ -1,4 +1,4 @@
-package newConfiguration
+package config
 
 import (
 	arbitrageABI "ArbitrageBot/ArbitrageBot/abi"
@@ -26,10 +26,9 @@ type Config struct {
 	ETHClient              *ethclient.Client
 	Arbitrage              *arbitrageABI.FlashLoanArbitrage
 	Authentication         *bind.TransactOpts
-	Helper                 HelperInterface
 	DecentralizedExchanges []DecentralizedExchange
 	TrendingTokens         []string
-	Tokens                 []Tokens
+	PairAddresses          map[common.Address]Tokens
 	HTTPRPCURLList         []string
 	HTTPRPCURL             string
 	WSSRPCURL              string
@@ -50,8 +49,9 @@ type Token struct {
 }
 
 type Tokens struct {
-	MainToken     Token
-	ExternalToken Token
+	MainToken              Token
+	ExternalToken          Token
+	DecentralizedExchanges []DecentralizedExchange
 }
 
 func (cfg *Config) Setup() (*Config, error) {
@@ -72,10 +72,14 @@ func (cfg *Config) Setup() (*Config, error) {
 	cfg.ETHClient = ethClient
 
 	cfg.SetupAuthentication()
-	cfg.SetupHelper()
 	cfg.SetupArbitrageAddress()
 
 	cfg, err = cfg.LoadTrendingTokens()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cfg.SetupGetPairAddresses()
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +89,6 @@ func (cfg *Config) Setup() (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
-}
-
-func (cfg *Config) SetupHelper() *Config {
-	cfg.Helper = &Helper{}
-	return cfg
 }
 
 func (cfg *Config) SetupRPCURL() *Config {
@@ -184,7 +183,7 @@ func (cfg *Config) SetupAuthentication() *Config {
 }
 
 func (cfg *Config) LoadTrendingTokens() (*Config, error) {
-	file, err := os.Open("tokens.json")
+	file, err := os.Open("trendingTokens.json")
 	if err != nil {
 		return nil, fmt.Errorf("error opening config file: %v", err)
 	}
@@ -202,6 +201,51 @@ func (cfg *Config) LoadTrendingTokens() (*Config, error) {
 	return cfg, nil
 }
 
+func (cfg *Config) SetupGetPairAddresses() error {
+	// Initialize PairAddresses map
+	cfg.PairAddresses = make(map[common.Address]Tokens)
+
+	trendingTokens := cfg.TrendingTokens
+
+	for _, token := range trendingTokens {
+		tokenAddress := common.HexToAddress(token)
+		var dexesFound []DecentralizedExchange
+
+		for _, exchange := range cfg.DecentralizedExchanges {
+
+			factoryAddress := common.HexToAddress(exchange.FactoryAddress)
+			factory, err := arbitrageABI.NewUniswapV2Factory(factoryAddress, cfg.ETHClient)
+			if err != nil {
+				log.Fatalf("Failed to instantiate a Uniswap V2 factory contract: %v", err)
+			}
+
+			pairAddress, err := factory.GetPair(nil, cfg.MainTokenAddress, tokenAddress)
+			if err != nil {
+				log.Printf("Failed to get pair address: %v\n", err)
+			}
+
+			if pairAddress != common.HexToAddress("0x0000000000000000000000000000000000000000") {
+				dexesFound = append(dexesFound, exchange)
+			}
+		}
+
+		if len(dexesFound) >= 2 {
+			cfg.PairAddresses[tokenAddress] = Tokens{
+				MainToken: Token{
+					Address: cfg.MainTokenAddress,
+				},
+				ExternalToken: Token{
+					Address: tokenAddress,
+				},
+				DecentralizedExchanges: dexesFound,
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (cfg *Config) WatchSwap() error {
 	client, err := ethclient.Dial(cfg.WSSRPCURL)
 	if err != nil {
@@ -213,15 +257,13 @@ func (cfg *Config) WatchSwap() error {
 
 	// Filter query for multiple router addresses
 	var addresses []common.Address
-	for _, dex := range cfg.DecentralizedExchanges {
-		addresses = append(addresses, common.HexToAddress(dex.RouterV2))
+	for pairAddress, _ := range cfg.PairAddresses {
+		addresses = append(addresses, pairAddress)
 	}
 
 	query := ethereum.FilterQuery{
 		Addresses: addresses,
 	}
-
-	log.Println(query.Addresses)
 
 	logs := make(chan types.Log)
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
@@ -240,13 +282,50 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
+	var threshold = big.NewInt(4)
+	// Define the print amount as 20 tokens with 18 decimals
+	tokenDecimals := 6
+	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
+	printAmount.Mul(printAmount, big.NewInt(2000)) // 20 * 10^18
 
-}
+	log.Printf("Log just occured %v\n", vLog.Address)
+	pairAddress := cfg.PairAddresses[vLog.Address]
 
-func main() {
-	cfg := &Config{}
-	_, err := cfg.Setup()
-	if err != nil {
-		log.Fatalf("Failed to set up config: %v", err)
+	startSwapAddress := pairAddress.DecentralizedExchanges[0].RouterV2
+	mainTokenAddress := pairAddress.MainToken.Address
+	externalTokenAddress := pairAddress.ExternalToken.Address
+
+	for i, dex := range pairAddress.DecentralizedExchanges {
+		if i == 0 {
+			continue
+		}
+		isProfitable, err := cfg.Arbitrage.CheckProfitability(nil, common.HexToAddress(startSwapAddress),
+			common.HexToAddress(dex.RouterV2), mainTokenAddress, externalTokenAddress, printAmount, threshold)
+		if err != nil {
+			log.Println("An error occurred checking arbitrage opportunity", err)
+		}
+		log.Println("Is profitable ", isProfitable.IsProfitable, "The direction ", isProfitable.Direction, " The profit ", isProfitable.PercentageProfit)
+		if isProfitable.IsProfitable {
+
+			if isProfitable.Direction == "ATOB" {
+				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
+					common.HexToAddress(startSwapAddress), common.HexToAddress(dex.RouterV2), mainTokenAddress, externalTokenAddress, printAmount)
+				if err != nil {
+					log.Println("Error executing flash loan ", err)
+					return
+				}
+				log.Println("The transaction hash ", makeFlashLoanTX.Hash())
+			} else if isProfitable.Direction == "BTOA" {
+				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
+					common.HexToAddress(dex.RouterV2), common.HexToAddress(startSwapAddress), mainTokenAddress, externalTokenAddress, printAmount)
+				if err != nil {
+					log.Println("Error executing flash loan ", err)
+					return
+				}
+				log.Println("The transaction hash ", makeFlashLoanTX.Hash())
+			}
+		}
+
 	}
+
 }

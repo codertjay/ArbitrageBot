@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ArbitrageBot/ArbitrageBot/configurations"
+	"ArbitrageBot/ArbitrageBot/config"
 	"log"
 )
 
@@ -12,13 +12,9 @@ import (
 //go:generate abigen --abi ./node_modules/@uniswap/v2-core/build/UniswapV2Pair.json --pkg arbitrageABI --type UniswapV2Pair --out ./ArbitrageBot/abi/uniswapV2Pair.go
 
 func main() {
-	configInterface := configurations.NewConfig()
-
-	_, err := configInterface.Setup()
+	cfg := &config.Config{}
+	_, err := cfg.Setup()
 	if err != nil {
-		log.Println("An error occurred ", err)
+		log.Fatalf("Failed to set up config: %v", err)
 	}
-
-	log.Println("Arbitrage bot is running...")
-	select {} // Block forever
 }
