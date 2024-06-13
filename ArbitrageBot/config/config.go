@@ -18,6 +18,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"time"
 )
 
 // ConfigInterface definition remains unchanged
@@ -179,6 +180,18 @@ func (cfg *Config) SetupAuthentication() *Config {
 	if err != nil {
 		log.Fatalf("Failed to create transactor: %v", err)
 	}
+
+	gasPrice, err := cfg.ETHClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to suggest gas price: %v", err)
+	}
+
+	// Increment gas price slightly (example: increase by 10%)
+	increment := new(big.Int).Div(gasPrice, big.NewInt(10)) // 10% increase
+	gasPrice = new(big.Int).Add(gasPrice, increment)
+
+	cfg.Authentication.GasPrice = gasPrice
+
 	return cfg
 }
 
@@ -274,7 +287,12 @@ func (cfg *Config) WatchSwap() error {
 	for {
 		select {
 		case err := <-sub.Err():
-			log.Fatalf("Subscription error: %v", err)
+			// Attempt to resubscribe after a delay
+			time.Sleep(10 * time.Second)
+			sub, err = client.SubscribeFilterLogs(context.Background(), query, logs)
+			if err != nil {
+				log.Fatalf("Failed to resubscribe: %v", err)
+			}
 		case vLog := <-logs:
 			cfg.HandleSwapLog(vLog)
 		}
@@ -282,7 +300,7 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	var threshold = big.NewInt(500)
+	var threshold = big.NewInt(10)
 	// Define the print amount as 20 tokens with 18 decimals
 	tokenDecimals := 6
 	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
@@ -304,6 +322,8 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 		if err != nil {
 			log.Println("An error occurred checking arbitrage opportunity", err)
 		}
+		log.Println("The pair address ", vLog.Address, "The main token address ", mainTokenAddress, "The external token address ", externalTokenAddress, "The print amount ", printAmount, "The threshold ", threshold)
+
 		log.Println("Is profitable ", isProfitable.IsProfitable, "The direction ", isProfitable.Direction, " The profit ", isProfitable.PercentageProfit)
 		if isProfitable.IsProfitable {
 
