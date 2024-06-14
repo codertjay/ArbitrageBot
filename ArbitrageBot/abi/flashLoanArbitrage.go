@@ -38,7 +38,7 @@ type FlashLoanArbitrageArbitrageResult struct {
 
 // FlashLoanArbitrageMetaData contains all meta data concerning the FlashLoanArbitrage contract.
 var FlashLoanArbitrageMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"constructor\",\"inputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"receive\",\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"checkProfitability\",\"inputs\":[{\"name\":\"_startSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_endSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token0\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token1\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_flashAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"_threshold\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"tuple\",\"internalType\":\"structFlashLoanArbitrage.ArbitrageResult\",\"components\":[{\"name\":\"isProfitable\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"direction\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"percentageProfit\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"estimateGasCost\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"makeFlashLoan\",\"inputs\":[{\"name\":\"_startSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_endSwapAddress\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token0\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_token1\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_flashAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"owner\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"receiveFlashLoan\",\"inputs\":[{\"name\":\"tokens\",\"type\":\"address[]\",\"internalType\":\"contractIERC20[]\"},{\"name\":\"amounts\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"feeAmounts\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"userData\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"routerAddresses\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"routers\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractIUniswapV2Router02\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"withdrawAllERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawEther\",\"inputs\":[{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"error\",\"name\":\"Arbitrage__OnlyOwner\",\"inputs\":[]}]",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"receive\",\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"checkProfitability\",\"inputs\":[{\"name\":\"_Key1\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"_Key2\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"_token1\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_flashAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"_threshold\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"tuple\",\"internalType\":\"structFlashLoanArbitrage.ArbitrageResult\",\"components\":[{\"name\":\"isProfitable\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"direction\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"percentageProfit\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"estimateGasCost\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"makeFlashLoan\",\"inputs\":[{\"name\":\"_Key1\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"_Key2\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"_token1FirstPart\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_flashAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"owner\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"receiveFlashLoan\",\"inputs\":[{\"name\":\"tokens\",\"type\":\"address[]\",\"internalType\":\"contractIERC20[]\"},{\"name\":\"amounts\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"feeAmounts\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"userData\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawAllERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawERC20\",\"inputs\":[{\"name\":\"_token\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"withdrawEther\",\"inputs\":[{\"name\":\"_amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"error\",\"name\":\"Arbitrage__OnlyOwner\",\"inputs\":[]}]",
 }
 
 // FlashLoanArbitrageABI is the input ABI used to generate the binding from.
@@ -187,12 +187,12 @@ func (_FlashLoanArbitrage *FlashLoanArbitrageTransactorRaw) Transact(opts *bind.
 	return _FlashLoanArbitrage.Contract.contract.Transact(opts, method, params...)
 }
 
-// CheckProfitability is a free data retrieval call binding the contract method 0x576ccf96.
+// CheckProfitability is a free data retrieval call binding the contract method 0x347b29a2.
 //
-// Solidity: function checkProfitability(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
-func (_FlashLoanArbitrage *FlashLoanArbitrageCaller) CheckProfitability(opts *bind.CallOpts, _startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
+// Solidity: function checkProfitability(bytes32 _Key1, bytes32 _Key2, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
+func (_FlashLoanArbitrage *FlashLoanArbitrageCaller) CheckProfitability(opts *bind.CallOpts, _Key1 [32]byte, _Key2 [32]byte, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
 	var out []interface{}
-	err := _FlashLoanArbitrage.contract.Call(opts, &out, "checkProfitability", _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount, _threshold)
+	err := _FlashLoanArbitrage.contract.Call(opts, &out, "checkProfitability", _Key1, _Key2, _token1, _flashAmount, _threshold)
 
 	if err != nil {
 		return *new(FlashLoanArbitrageArbitrageResult), err
@@ -204,18 +204,18 @@ func (_FlashLoanArbitrage *FlashLoanArbitrageCaller) CheckProfitability(opts *bi
 
 }
 
-// CheckProfitability is a free data retrieval call binding the contract method 0x576ccf96.
+// CheckProfitability is a free data retrieval call binding the contract method 0x347b29a2.
 //
-// Solidity: function checkProfitability(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
-func (_FlashLoanArbitrage *FlashLoanArbitrageSession) CheckProfitability(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
-	return _FlashLoanArbitrage.Contract.CheckProfitability(&_FlashLoanArbitrage.CallOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount, _threshold)
+// Solidity: function checkProfitability(bytes32 _Key1, bytes32 _Key2, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
+func (_FlashLoanArbitrage *FlashLoanArbitrageSession) CheckProfitability(_Key1 [32]byte, _Key2 [32]byte, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
+	return _FlashLoanArbitrage.Contract.CheckProfitability(&_FlashLoanArbitrage.CallOpts, _Key1, _Key2, _token1, _flashAmount, _threshold)
 }
 
-// CheckProfitability is a free data retrieval call binding the contract method 0x576ccf96.
+// CheckProfitability is a free data retrieval call binding the contract method 0x347b29a2.
 //
-// Solidity: function checkProfitability(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
-func (_FlashLoanArbitrage *FlashLoanArbitrageCallerSession) CheckProfitability(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
-	return _FlashLoanArbitrage.Contract.CheckProfitability(&_FlashLoanArbitrage.CallOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount, _threshold)
+// Solidity: function checkProfitability(bytes32 _Key1, bytes32 _Key2, address _token1, uint256 _flashAmount, uint256 _threshold) view returns((bool,string,uint256))
+func (_FlashLoanArbitrage *FlashLoanArbitrageCallerSession) CheckProfitability(_Key1 [32]byte, _Key2 [32]byte, _token1 common.Address, _flashAmount *big.Int, _threshold *big.Int) (FlashLoanArbitrageArbitrageResult, error) {
+	return _FlashLoanArbitrage.Contract.CheckProfitability(&_FlashLoanArbitrage.CallOpts, _Key1, _Key2, _token1, _flashAmount, _threshold)
 }
 
 // EstimateGasCost is a free data retrieval call binding the contract method 0xfa4cc7c6.
@@ -280,87 +280,25 @@ func (_FlashLoanArbitrage *FlashLoanArbitrageCallerSession) Owner() (common.Addr
 	return _FlashLoanArbitrage.Contract.Owner(&_FlashLoanArbitrage.CallOpts)
 }
 
-// RouterAddresses is a free data retrieval call binding the contract method 0xd2752680.
+// MakeFlashLoan is a paid mutator transaction binding the contract method 0x56a1738b.
 //
-// Solidity: function routerAddresses(uint256 ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageCaller) RouterAddresses(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
-	var out []interface{}
-	err := _FlashLoanArbitrage.contract.Call(opts, &out, "routerAddresses", arg0)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
+// Solidity: function makeFlashLoan(bytes32 _Key1, bytes32 _Key2, address _token1FirstPart, uint256 _flashAmount) returns()
+func (_FlashLoanArbitrage *FlashLoanArbitrageTransactor) MakeFlashLoan(opts *bind.TransactOpts, _Key1 [32]byte, _Key2 [32]byte, _token1FirstPart common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
+	return _FlashLoanArbitrage.contract.Transact(opts, "makeFlashLoan", _Key1, _Key2, _token1FirstPart, _flashAmount)
 }
 
-// RouterAddresses is a free data retrieval call binding the contract method 0xd2752680.
+// MakeFlashLoan is a paid mutator transaction binding the contract method 0x56a1738b.
 //
-// Solidity: function routerAddresses(uint256 ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageSession) RouterAddresses(arg0 *big.Int) (common.Address, error) {
-	return _FlashLoanArbitrage.Contract.RouterAddresses(&_FlashLoanArbitrage.CallOpts, arg0)
+// Solidity: function makeFlashLoan(bytes32 _Key1, bytes32 _Key2, address _token1FirstPart, uint256 _flashAmount) returns()
+func (_FlashLoanArbitrage *FlashLoanArbitrageSession) MakeFlashLoan(_Key1 [32]byte, _Key2 [32]byte, _token1FirstPart common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
+	return _FlashLoanArbitrage.Contract.MakeFlashLoan(&_FlashLoanArbitrage.TransactOpts, _Key1, _Key2, _token1FirstPart, _flashAmount)
 }
 
-// RouterAddresses is a free data retrieval call binding the contract method 0xd2752680.
+// MakeFlashLoan is a paid mutator transaction binding the contract method 0x56a1738b.
 //
-// Solidity: function routerAddresses(uint256 ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageCallerSession) RouterAddresses(arg0 *big.Int) (common.Address, error) {
-	return _FlashLoanArbitrage.Contract.RouterAddresses(&_FlashLoanArbitrage.CallOpts, arg0)
-}
-
-// Routers is a free data retrieval call binding the contract method 0x80dd9a1f.
-//
-// Solidity: function routers(address ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageCaller) Routers(opts *bind.CallOpts, arg0 common.Address) (common.Address, error) {
-	var out []interface{}
-	err := _FlashLoanArbitrage.contract.Call(opts, &out, "routers", arg0)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Routers is a free data retrieval call binding the contract method 0x80dd9a1f.
-//
-// Solidity: function routers(address ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageSession) Routers(arg0 common.Address) (common.Address, error) {
-	return _FlashLoanArbitrage.Contract.Routers(&_FlashLoanArbitrage.CallOpts, arg0)
-}
-
-// Routers is a free data retrieval call binding the contract method 0x80dd9a1f.
-//
-// Solidity: function routers(address ) view returns(address)
-func (_FlashLoanArbitrage *FlashLoanArbitrageCallerSession) Routers(arg0 common.Address) (common.Address, error) {
-	return _FlashLoanArbitrage.Contract.Routers(&_FlashLoanArbitrage.CallOpts, arg0)
-}
-
-// MakeFlashLoan is a paid mutator transaction binding the contract method 0xaeb03424.
-//
-// Solidity: function makeFlashLoan(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_FlashLoanArbitrage *FlashLoanArbitrageTransactor) MakeFlashLoan(opts *bind.TransactOpts, _startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _FlashLoanArbitrage.contract.Transact(opts, "makeFlashLoan", _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
-}
-
-// MakeFlashLoan is a paid mutator transaction binding the contract method 0xaeb03424.
-//
-// Solidity: function makeFlashLoan(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_FlashLoanArbitrage *FlashLoanArbitrageSession) MakeFlashLoan(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _FlashLoanArbitrage.Contract.MakeFlashLoan(&_FlashLoanArbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
-}
-
-// MakeFlashLoan is a paid mutator transaction binding the contract method 0xaeb03424.
-//
-// Solidity: function makeFlashLoan(address _startSwapAddress, address _endSwapAddress, address _token0, address _token1, uint256 _flashAmount) returns()
-func (_FlashLoanArbitrage *FlashLoanArbitrageTransactorSession) MakeFlashLoan(_startSwapAddress common.Address, _endSwapAddress common.Address, _token0 common.Address, _token1 common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
-	return _FlashLoanArbitrage.Contract.MakeFlashLoan(&_FlashLoanArbitrage.TransactOpts, _startSwapAddress, _endSwapAddress, _token0, _token1, _flashAmount)
+// Solidity: function makeFlashLoan(bytes32 _Key1, bytes32 _Key2, address _token1FirstPart, uint256 _flashAmount) returns()
+func (_FlashLoanArbitrage *FlashLoanArbitrageTransactorSession) MakeFlashLoan(_Key1 [32]byte, _Key2 [32]byte, _token1FirstPart common.Address, _flashAmount *big.Int) (*types.Transaction, error) {
+	return _FlashLoanArbitrage.Contract.MakeFlashLoan(&_FlashLoanArbitrage.TransactOpts, _Key1, _Key2, _token1FirstPart, _flashAmount)
 }
 
 // ReceiveFlashLoan is a paid mutator transaction binding the contract method 0xf04f2707.

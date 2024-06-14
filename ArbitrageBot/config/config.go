@@ -41,6 +41,7 @@ type DecentralizedExchange struct {
 	Name           string
 	RouterV2       string
 	FactoryAddress string
+	MKey           string
 }
 
 type Token struct {
@@ -130,16 +131,19 @@ func (cfg *Config) SetupDecentralizedExchange() *Config {
 			Name:           "QUICKSWAP",
 			RouterV2:       "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
 			FactoryAddress: "0x5757371414417b8c6caad45baef941abc7d3ab32",
+			MKey:           "M1",
 		},
 		{
 			Name:           "SUSHISWAP",
 			RouterV2:       "0x1b02da8cb0d097eb8d57a175b88c7d8b47997506",
 			FactoryAddress: "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
+			MKey:           "M2",
 		},
 		{
 			Name:           "DFYN",
 			RouterV2:       "0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429",
 			FactoryAddress: "0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B",
+			MKey:           "M3",
 		},
 	}
 	return cfg
@@ -181,16 +185,8 @@ func (cfg *Config) SetupAuthentication() *Config {
 		log.Fatalf("Failed to create transactor: %v", err)
 	}
 
-	gasPrice, err := cfg.ETHClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatalf("Failed to suggest gas price: %v", err)
-	}
-
-	// Increment gas price slightly (example: increase by 10%)
-	increment := new(big.Int).Div(gasPrice, big.NewInt(10)) // 10% increase
-	gasPrice = new(big.Int).Add(gasPrice, increment)
-
-	cfg.Authentication.GasPrice = gasPrice
+	// Set gas price to 50 Gwei (50 * 10^9 Wei)
+	cfg.Authentication.GasPrice = big.NewInt(500 * 1000000000)
 
 	return cfg
 }
@@ -300,37 +296,63 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	var threshold = big.NewInt(10)
+	//var threshold = big.NewInt(500)
 	// Define the print amount as 20 tokens with 18 decimals
 	tokenDecimals := 6
 	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
 	printAmount.Mul(printAmount, big.NewInt(200)) // 20 * 10^18
 
-	log.Printf("Log just occured %v\n", vLog.Address)
 	pairAddress := cfg.PairAddresses[vLog.Address]
 
-	startSwapAddress := pairAddress.DecentralizedExchanges[0].RouterV2
-	mainTokenAddress := pairAddress.MainToken.Address
+	startSwapAddress := pairAddress.DecentralizedExchanges[1].RouterV2
 	externalTokenAddress := pairAddress.ExternalToken.Address
 
+	key1, err := cfg.keccak256(pairAddress.DecentralizedExchanges[1].MKey)
+	if err != nil {
+		log.Println("An error occurred checking arbitrage opportunity", err)
+		return
+	}
+
 	for i, dex := range pairAddress.DecentralizedExchanges {
-		if i == 0 {
+		if i == 1 {
 			continue
 		}
-		isProfitable, err := cfg.Arbitrage.CheckProfitability(nil, common.HexToAddress(startSwapAddress),
-			common.HexToAddress(dex.RouterV2), mainTokenAddress, externalTokenAddress, printAmount, threshold)
+		key2, err := cfg.keccak256(dex.MKey)
 		if err != nil {
 			log.Println("An error occurred checking arbitrage opportunity", err)
+			return
 		}
-		log.Println("The pair address ", vLog.Address, "The main token address ", mainTokenAddress, "The external token address ", externalTokenAddress, "The print amount ", printAmount, "The threshold ", threshold)
 
-		log.Println("Is profitable ", isProfitable.IsProfitable, "The direction ", isProfitable.Direction, " The profit ", isProfitable.PercentageProfit)
+		log.Println("the ATOB direction", common.HexToAddress(startSwapAddress), " ", common.HexToAddress(dex.RouterV2))
+		makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key1, key2, externalTokenAddress, printAmount)
+		if err != nil {
+			log.Println("Error executing flash loan ", err)
+			//return
+		}
+		//log.Println("The transaction hash ", makeFlashLoanTX.Hash())
+
+		//} else if isProfitable.Direction == "BTOA" {
+		log.Println("the BTOA direction", common.HexToAddress(dex.RouterV2), " ", common.HexToAddress(startSwapAddress))
+
+		makeFlashLoanTX, err = cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key2, key1, externalTokenAddress, printAmount)
+		if err != nil {
+			log.Println("Error executing flash loan ", err)
+			return
+		}
+		log.Println("The transaction hash ", makeFlashLoanTX.Hash())
+
+		/*isProfitable, err := cfg.Arbitrage.CheckProfitability(nil, key1, key2, externalTokenAddress, printAmount, threshold)
+		if err != nil {
+			log.Println("An error occurred checking arbitrage opportunity", err)
+			return
+		}
+
 		if isProfitable.IsProfitable {
-
+			log.Println("The external token address ", externalTokenAddress, "The  TXHash", vLog.TxHash)
+			log.Println("Is profitable ", isProfitable.IsProfitable, "The direction ", isProfitable.Direction, " The profit ", isProfitable.PercentageProfit, " The log number", vLog.BlockNumber)
 			if isProfitable.Direction == "ATOB" {
 				log.Println("the ATOB direction", common.HexToAddress(startSwapAddress), " ", common.HexToAddress(dex.RouterV2))
-				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
-					common.HexToAddress(startSwapAddress), common.HexToAddress(dex.RouterV2), mainTokenAddress, externalTokenAddress, printAmount)
+				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key1, key2, externalTokenAddress, printAmount)
 				if err != nil {
 					log.Println("Error executing flash loan ", err)
 					return
@@ -340,16 +362,26 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 			} else if isProfitable.Direction == "BTOA" {
 				log.Println("the BTOA direction", common.HexToAddress(dex.RouterV2), " ", common.HexToAddress(startSwapAddress))
 
-				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication,
-					common.HexToAddress(dex.RouterV2), common.HexToAddress(startSwapAddress), mainTokenAddress, externalTokenAddress, printAmount)
+				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key2, key1, externalTokenAddress, printAmount)
 				if err != nil {
 					log.Println("Error executing flash loan ", err)
 					return
 				}
 				log.Println("The transaction hash ", makeFlashLoanTX.Hash())
 			}
-		}
+		}*/
 
 	}
 
+}
+
+func (cfg *Config) keccak256(input string) ([32]byte, error) {
+	// Compute the Keccak256 hash
+	hash := crypto.Keccak256([]byte(input))
+
+	// Convert hash to fixed-size array of 32 bytes
+	var hashBytes [32]byte
+	copy(hashBytes[:], hash)
+
+	return hashBytes, nil
 }

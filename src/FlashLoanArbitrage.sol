@@ -31,13 +31,22 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
 
     IVault private constant vault = IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
+    address private constant  main_token = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F;
+
     ////////////////////////////////////
     // State Declaration ///
     ////////////////////////////////////
 
     address public owner;
-    mapping(address => IUniswapV2Router02) public routers;
-    address[] public routerAddresses;
+
+
+    struct DecentralizedExchange {
+        string name;
+        address routerV2;
+        address factoryAddress;
+    }
+
+    mapping(bytes32 => DecentralizedExchange) private dexAddresses;
 
     ////////////////////////////////////
     // FUNCTIONS   ///
@@ -45,6 +54,25 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
 
     constructor() {
         owner = msg.sender;
+
+        // Initialize DEX addresses
+        dexAddresses[keccak256(abi.encodePacked("M1"))] = DecentralizedExchange({
+            name: "QUICKSWAP",
+            routerV2: 0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff,
+            factoryAddress: 0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32
+        });
+
+        dexAddresses[keccak256(abi.encodePacked("M2"))] = DecentralizedExchange({
+            name: "SUSHISWAP",
+            routerV2: 0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506,
+            factoryAddress: 0xc35DADB65012eC5796536bD9864eD8773aBc74C4
+        });
+
+        dexAddresses[keccak256(abi.encodePacked("M3"))] = DecentralizedExchange({
+            name: "DFYN",
+            routerV2: 0xA102072A4C07F06EC3B4900FDC4C7B80b6c57429,
+            factoryAddress: 0xE7Fb3e833eFE5F9c441105EB65Ef8b261266423B
+        });
     }
 
     ////////////////////////////////////
@@ -58,23 +86,31 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     @param _token1 : the address of the second token
     */
     function makeFlashLoan(
-        address _startSwapAddress,
-        address _endSwapAddress,
-        address _token0,
-        address _token1,
-        uint256 _flashAmount
+        bytes32 _Key1,
+        bytes32 _Key2,
+        address _token1FirstPart,
+        uint256 _flashAmount,
+        uint256 gp
     ) external onlyOwner {
-        bytes memory data = abi.encode(_startSwapAddress, _endSwapAddress, _token0, _token1);
+        bytes memory data = abi.encode(_Key1, _Key2, _token1FirstPart);
 
         // Token to flash loan, by default we are flash loaning 1 token.
         IERC20[] memory tokens = new IERC20[](1);
-        tokens[0] = IERC20(_token0);
+        tokens[0] = IERC20(main_token);
 
         // Flash loan amount.
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = _flashAmount;
 
-        vault.flashLoan(this, tokens, amounts, data);
+//        vault.flashLoan(this, tokens, amounts, data);
+//      Adjust gas price
+        uint256 gasPrice = tx.gasprice + gp * 10 ** 9; // Current gas price + 5 Gwei
+        bytes memory vault_data = abi.encodeWithSelector(vault.flashLoan.selector, this, tokens, amounts, data);
+        (bool success,) = address(vault).call{gas: gasleft()}(vault_data);
+
+        if (!success) {
+            revert("Flash loan failed");
+        }
     }
 
     /*
@@ -91,26 +127,33 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     ) external override onlyVault {
         uint256 flashAmount = amounts[0];
 
-        (address startSwapAddress, address endSwapAddress, address token0, address token1) =
-                            abi.decode(userData, (address, address, address, address));
+        (bytes32 startSwapKey, bytes32 endSwapKey,  bytes16 _token1, bytes4 _token2) =
+                            abi.decode(userData, (bytes32, bytes32, bytes16, bytes4));
+
+        address token1 = address(uint160(bytes20(abi.encodePacked(_token1, _token2))));
+
+
+        address startSwapAddress = dexAddresses[startSwapKey].routerV2;
+        address endSwapAddress = dexAddresses[endSwapKey].routerV2;
 
         // Make the Arbitrage Logic
         address[] memory path = new address[](2);
 
-        path[0] = token0;
+        path[0] = main_token;
         path[1] = token1;
         _swapTokens(path, flashAmount, 0, startSwapAddress);
 
         path[0] = token1;
-        path[1] = token0;
+        path[1] = main_token;
 
-        _swapTokens(path, IERC20(token1).balanceOf(address(this)), 0, endSwapAddress);
-
-
-        require(IERC20(token0).balanceOf(address(this)) >= flashAmount + feeAmounts[0], "Arbitrage failed");
+        uint256 amountOutMin = flashAmount + feeAmounts[0];
+        _swapTokens(path, IERC20(token1).balanceOf(address(this)), amountOutMin, endSwapAddress);
 
 
-        bool transferSuccess = IERC20(token0).transfer(address(vault), flashAmount + feeAmounts[0]);
+        require(IERC20(main_token).balanceOf(address(this)) >= amountOutMin, "Arbitrage failed");
+
+
+        bool transferSuccess = IERC20(main_token).transfer(address(vault), flashAmount + feeAmounts[0]);
         require(transferSuccess, "Transfer to vault failed");
 
     }
@@ -150,27 +193,33 @@ contract FlashLoanArbitrage is IFlashLoanRecipient {
     }
 
     function checkProfitability(
-        address _startSwapAddress,
-        address _endSwapAddress,
-        address _token0,
+        bytes32 _Key1,
+        bytes32 _Key2,
         address _token1,
         uint256 _flashAmount,
         uint256 _threshold
-    ) public  view returns (ArbitrageResult memory) {
+    ) public view returns (ArbitrageResult memory) {
         ArbitrageResult memory result;
 
+        /* Making the code obscure*/
+        address token1 = _token1;
+
+
+        address startSwapAddress = dexAddresses[_Key1].routerV2;
+        address endSwapAddress = dexAddresses[_Key2].routerV2;
+
         address[] memory path = new address[](2);
-        path[0] = _token0;
-        path[1] = _token1;
+        path[0] = main_token;
+        path[1] = token1;
 
         uint256 _thresholdScaled = _threshold * 100;
 
-        uint8 token0Decimals = getDecimals(_token0);
-        uint8 token1Decimals = getDecimals(_token1);
+        uint8 token0Decimals = getDecimals(main_token);
+        uint8 token1Decimals = getDecimals(token1);
 
 
-        uint256[] memory startSwapAmount = IUniswapV2Router02(_startSwapAddress).getAmountsOut(_flashAmount, path);
-        uint256[] memory endSwapAmount = IUniswapV2Router02(_endSwapAddress).getAmountsOut(_flashAmount, path);
+        uint256[] memory startSwapAmount = IUniswapV2Router02(startSwapAddress).getAmountsOut(_flashAmount, path);
+        uint256[] memory endSwapAmount = IUniswapV2Router02(endSwapAddress).getAmountsOut(_flashAmount, path);
 
 
         uint256 startSwapPrice = (startSwapAmount[1] * 10 ** uint256(token0Decimals)) / startSwapAmount[0];
