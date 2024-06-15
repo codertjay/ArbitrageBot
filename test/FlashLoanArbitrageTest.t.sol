@@ -22,29 +22,25 @@ contract ArbitrageTest is Test {
 
     function setUp() external {
         // arbitrage = FlashLoanArbitrage(payable(i_deployed_arbitrage));
+        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
         arbitrage = new FlashLoanArbitrage();
+        vm.stopBroadcast();
     }
 
     function testArbitrage() public {
-        console.log("Arbitrage address: %s", address(arbitrage));
-        console.log("Arbitrage owner: %s", address(arbitrage.owner()));
+        FlashLoanArbitrage.MakeInput[] memory inputs = new FlashLoanArbitrage.MakeInput[](1);
 
-        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
-
-        // Encode the string keys "M1" and "M2" to bytes32
-        bytes32 key1 = keccak256(abi.encodePacked("M1"));
-        bytes32 key2 = keccak256(abi.encodePacked("M2"));
-
-        (address token1,address token2) = this.splitAddress(i_token1);
-
-
-        arbitrage.makeFlashLoan(
-            key1,
-            key2,
+        inputs[0] = FlashLoanArbitrage.MakeInput(
+            keccak256(abi.encodePacked("M1")),
+            keccak256(abi.encodePacked("M2")),
             i_token1,
-            i_arbitrage_amount
+            i_arbitrage_amount,
+            5
         );
 
+
+        vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
+        arbitrage.milking(inputs);
         vm.stopBroadcast();
     }
 
@@ -108,16 +104,5 @@ contract ArbitrageTest is Test {
     }
 
 
-    function splitAddress(address addr) public pure returns (address part1, address part2) {
-        require(addr != address(0), "Invalid address");
 
-        // Convert address to bytes
-        bytes20 addrBytes = bytes20(addr);
-
-        // Split into two parts
-        assembly {
-            part1 := mload(add(addrBytes, 32))
-            part2 := mload(add(addrBytes, 52))
-        }
-    }
 }

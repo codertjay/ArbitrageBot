@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="37c3e2cc-c336-4bd1-ab7b-37ab118fea07" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArbitrageBot/abi/flashLoanArbitrage.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/abi/flashLoanArbitrage.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ArbitrageBot/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/ArbitrageBot/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" beforeDir="false" afterPath="$PROJECT_DIR$/broadcast/DeployFlashLoanArbitrage.s.sol/137/run-latest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" beforeDir="false" afterPath="$PROJECT_DIR$/src/FlashLoanArbitrage.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" beforeDir="false" afterPath="$PROJECT_DIR$/test/FlashLoanArbitrageTest.t.sol" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trendingTokens.json" beforeDir="false" afterPath="$PROJECT_DIR$/trendingTokens.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -296,7 +296,7 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	//var threshold = big.NewInt(500)
+	var threshold = big.NewInt(500)
 	// Define the print amount as 20 tokens with 18 decimals
 	tokenDecimals := 6
 	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
@@ -323,25 +323,7 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 			return
 		}
 
-		log.Println("the ATOB direction", common.HexToAddress(startSwapAddress), " ", common.HexToAddress(dex.RouterV2))
-		makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key1, key2, externalTokenAddress, printAmount)
-		if err != nil {
-			log.Println("Error executing flash loan ", err)
-			//return
-		}
-		//log.Println("The transaction hash ", makeFlashLoanTX.Hash())
-
-		//} else if isProfitable.Direction == "BTOA" {
-		log.Println("the BTOA direction", common.HexToAddress(dex.RouterV2), " ", common.HexToAddress(startSwapAddress))
-
-		makeFlashLoanTX, err = cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key2, key1, externalTokenAddress, printAmount)
-		if err != nil {
-			log.Println("Error executing flash loan ", err)
-			return
-		}
-		log.Println("The transaction hash ", makeFlashLoanTX.Hash())
-
-		/*isProfitable, err := cfg.Arbitrage.CheckProfitability(nil, key1, key2, externalTokenAddress, printAmount, threshold)
+		isProfitable, err := cfg.Arbitrage.CheckProfitability(nil, key1, key2, externalTokenAddress, printAmount, threshold)
 		if err != nil {
 			log.Println("An error occurred checking arbitrage opportunity", err)
 			return
@@ -352,7 +334,10 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 			log.Println("Is profitable ", isProfitable.IsProfitable, "The direction ", isProfitable.Direction, " The profit ", isProfitable.PercentageProfit, " The log number", vLog.BlockNumber)
 			if isProfitable.Direction == "ATOB" {
 				log.Println("the ATOB direction", common.HexToAddress(startSwapAddress), " ", common.HexToAddress(dex.RouterV2))
-				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key1, key2, externalTokenAddress, printAmount)
+				input := arbitrageABI.FlashLoanArbitrageMakeInput{
+					key1, key2, externalTokenAddress, printAmount, big.NewInt(5),
+				}
+				makeFlashLoanTX, err := cfg.Arbitrage.Milking(cfg.Authentication, []arbitrageABI.FlashLoanArbitrageMakeInput{input})
 				if err != nil {
 					log.Println("Error executing flash loan ", err)
 					return
@@ -362,14 +347,17 @@ func (cfg *Config) HandleSwapLog(vLog types.Log) {
 			} else if isProfitable.Direction == "BTOA" {
 				log.Println("the BTOA direction", common.HexToAddress(dex.RouterV2), " ", common.HexToAddress(startSwapAddress))
 
-				makeFlashLoanTX, err := cfg.Arbitrage.MakeFlashLoan(cfg.Authentication, key2, key1, externalTokenAddress, printAmount)
+				input := arbitrageABI.FlashLoanArbitrageMakeInput{
+					key2, key1, externalTokenAddress, printAmount, big.NewInt(5),
+				}
+				makeFlashLoanTX, err := cfg.Arbitrage.Milking(cfg.Authentication, []arbitrageABI.FlashLoanArbitrageMakeInput{input})
 				if err != nil {
 					log.Println("Error executing flash loan ", err)
 					return
 				}
 				log.Println("The transaction hash ", makeFlashLoanTX.Hash())
 			}
-		}*/
+		}
 
 	}
 
