@@ -296,7 +296,7 @@ func (cfg *Config) WatchSwap() error {
 }
 
 func (cfg *Config) HandleSwapLog(vLog types.Log) {
-	var threshold = big.NewInt(500)
+	var threshold = big.NewInt(5000)
 	// Define the print amount as 20 tokens with 18 decimals
 	tokenDecimals := 6
 	printAmount := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenDecimals)), nil)
